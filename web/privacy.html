@@ -48,7 +48,7 @@
       <li><b>Your requests.</b> The text you type into the Console.</li>
       <li><b>Server information.</b> When a request is processed, the bot reads your server&rsquo;s name and ID, the owner&rsquo;s and bot&rsquo;s user IDs, and the names and IDs of channels and roles. When you ask for an action on a member, the bot looks that member up by name or ID.</li>
       <li><b>Results.</b> A status for each request (such as executed or failed) and, if something failed or was rejected, an error or reason that may include names and IDs.</li>
-      <li><b>Request history and audit log.</b> The text of each request, its final status and result, the credits it used, and a record of irreversible actions an agent took (such as bans, kicks and deletions), stored against your server ID so you can look back and so abuse can be investigated.</li>
+      <li><b>Request history and audit log.</b> The text of each request, its final status and result, and a record of irreversible actions an agent took (such as bans, kicks and deletions), stored against your server ID so you can look back and so abuse can be investigated.</li>
       <li><b>Console session.</b> While your Console is open, which AI agent you hold and, if all are busy, your place in the waiting line, stored against your server ID. It is released shortly after you close the Console.</li>
       <li><b>Sign-in data.</b> A temporary magic-link token and a session cookie.</li>
       <li><b>Support chat.</b> Messages you send to the AI support assistant, plus the current system status, are used to write a reply. We do not keep them after the reply is sent; the chat history stays in your browser. To limit abuse, a salted, hashed form of your IP address is kept as a request counter for up to 24 hours.</li>
@@ -62,10 +62,10 @@
     <ul>
       <li><b>Google (Gemini).</b> Your request and the server information described above are sent to one of our AI agents (Google&rsquo;s Gemini models) to perform the safety check and planning. Support chat messages are sent to a separate support agent to write answers, with a backup agent if it is unavailable. Google handles that data under its own terms and privacy policy.</li>
       <li><b>Web research.</b> When an agent researches the web, its search question is sent to Google through the Gemini service, and the answer comes back with source links.</li>
-      <li><b>Email and webhooks (only if the operator turns them on).</b> The text of an email goes to our email provider (Resend) and then to an allowed recipient. A webhook request goes, through QStash, to a host the operator has allowed.</li>
+      <li><b>Email and webhooks (only if the operator turns them on).</b> The text of an email goes to our email provider (Resend) and then to an allowed recipient. A webhook request goes from our server to a host the operator has allowed.</li>
       <li><b>Google Fonts.</b> Pages load the Anton and JetBrains Mono typefaces from Google Fonts, so Google receives your IP address and browser details when a page loads. Google handles that data under its own privacy policy.</li>
       <li><b>Discord.</b> The bot carries out actions on your server through Discord&rsquo;s API.</li>
-      <li><b>Upstash (QStash and Workflow).</b> Each request runs as a durable background task. The plan steps, including names and IDs inside them, pass through Upstash&rsquo;s QStash on their way to the bot, and may be held while a task waits for a scheduled step.</li>
+      <li><b>Inngest.</b> Each request runs as a durable background task. Inngest keeps the request&rsquo;s progress, including the results of finished steps (plan steps with names and IDs, and short summaries), so a task can wait for a scheduled step and carry on. Upstash Redis holds our live state.</li>
       <li><b>Infrastructure providers.</b> Upstash (temporary storage), Aiven (the database that holds request history and the audit log), and our hosting providers, which run the bot and website and may keep standard technical logs such as IP address and request time.</li>
     </ul>
 
