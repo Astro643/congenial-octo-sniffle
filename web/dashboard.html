@@ -78,11 +78,9 @@ main{max-width:680px;margin:0 auto;padding:64px 24px 210px;min-height:100vh}
 .gate-bar i{display:block;height:100%;width:40%;background:var(--green);border-radius:3px;animation:slide 1.8s ease-in-out infinite}
 .agent-chip{position:fixed;top:18px;right:24px;z-index:5;font:600 11px/1 var(--mono);text-transform:uppercase;letter-spacing:.07em;color:var(--green-ink);background:var(--green-soft);border-radius:999px;padding:10px 12px;display:none}
 .agent-chip.show{display:block}
-.credit-chip{color:var(--muted);background:var(--surface);border:1px solid var(--border)}
 .top-right{position:fixed;top:16px;right:24px;z-index:10;display:flex;flex-direction:column;align-items:flex-end;gap:12px}
 .top-row{display:flex;align-items:center;gap:14px}
 .top-right .agent-chip{position:static}
-.credit-chip.low{color:#8A4B04;background:#FFEBC7;border-color:#F0D29A}
 @keyframes slide{0%{transform:translateX(-120%)}100%{transform:translateX(320%)} }
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(46,255,155,.45);opacity:1}70%{box-shadow:0 0 0 7px rgba(46,255,155,0);opacity:.55}100%{box-shadow:0 0 0 0 rgba(46,255,155,0);opacity:1}}
 @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
@@ -96,7 +94,6 @@ main{max-width:680px;margin:0 auto;padding:64px 24px 210px;min-height:100vh}
   <div class="top-row">
     <span class="agent-chip" id="agent-chip"></span>
   </div>
-  <span class="agent-chip credit-chip" id="credit-chip"></span>
 </div>
 <main>
   <section id="feed" aria-live="polite"></section>
@@ -244,19 +241,10 @@ main{max-width:680px;margin:0 auto;padding:64px 24px 210px;min-height:100vh}
   const gateBar = document.getElementById("gate-bar");
   const chip = document.getElementById("agent-chip");
   let active = false, pingTimer = null;
-  const creditChip = document.getElementById("credit-chip");
-  function setCredits(c) {
-    if (!c || c.left === null || c.left === undefined) { creditChip.classList.remove("show"); return; }
-    creditChip.textContent = c.left + " of " + c.limit + " credits left today";
-    creditChip.title = (c.notes && c.notes.length) ? "Costs are higher right now: " + c.notes.join("; ") : "Your allowance depends on how busy the service is today.";
-    creditChip.classList.toggle("low", c.left <= Math.max(3, Math.floor(c.limit * 0.1)));
-    creditChip.classList.add("show");
-  }
   function setActive(on, agent) {
     active = on;
     gate.classList.toggle("show", !on);
     chip.classList.toggle("show", on && !!agent);
-    if (!on) creditChip.classList.remove("show");
     if (on && agent) chip.textContent = "Agent " + agent;
     input.disabled = !on; btn.disabled = !on;
     if (on) setTimeout(() => input.focus(), 50);
@@ -274,7 +262,7 @@ main{max-width:680px;margin:0 auto;padding:64px 24px 210px;min-height:100vh}
       if (r.status === 401) { showGate("Session expired", "", "Open a fresh link from your bot to continue.", false); setActive(false); return; }
       if (!r.ok) throw new Error("ping");
       const d = await r.json();
-      if (d.state === "active") { setActive(true, d.agent); setCredits(d.credits); delay = 30000; }
+      if (d.state === "active") { setActive(true, d.agent); delay = 30000; }
       else if (d.state === "waiting") {
         setActive(false);
         showGate("You are in line", "#" + d.position,
