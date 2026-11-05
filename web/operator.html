@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#151416">
+<meta name="robots" content="noindex,nofollow">
+<title>Inbox · Controller</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M2.5 5h19L12 20.5z' fill='%232EFF9B'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#131214; --panel:#1B1A1D; --panel-2:#232226; --line:#2D2C30; --line-soft:#252427;
+  --ink:#ECEBEC; --muted:#9A999D; --faint:#68676B;
+  --green:#2EFF9B; --green-deep:#1BE585; --rose:#FF6B6B; --amber:#F2A93B;
+  --sans:Inter,"Inter var",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --display:"Anton",Impact,"Arial Narrow Bold",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+::selection{background:rgba(46,255,155,.3)}
+[hidden]{display:none!important}
+
+/* sign-in */
+#gate{position:fixed;inset:0;display:grid;place-items:center;padding:24px;background:var(--bg);z-index:10}
+.gate-card{width:100%;max-width:380px;border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:30px 28px}
+.gate-card h1{margin:0 0 6px;font:400 32px/1.05 var(--display);text-transform:uppercase}
+.gate-card p{margin:0 0 20px;color:var(--muted);font-size:14px}
+.gate-card input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:13px 14px;outline:none}
+.gate-card input:focus{border-color:var(--green)}
+.gate-card button{width:100%;margin-top:12px;border:0;border-radius:10px;background:var(--green);color:#000;font-weight:600;padding:13px}
+.gate-card button:hover{background:var(--green-deep)}
+#gate-err{min-height:20px;margin-top:10px;font-size:13px;color:var(--rose)}
+
+/* layout */
+.app{display:grid;grid-template-columns:340px minmax(0,1fr);height:100dvh}
+.list{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line);background:var(--panel)}
+.list-h{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
+.bell{position:relative;width:22px;height:22px;flex:none;color:var(--ink)}
+.bell svg{width:22px;height:22px;display:block}
+.bell i{position:absolute;top:-2px;right:-2px;width:9px;height:9px;border-radius:50%;background:var(--green);border:2px solid var(--panel);box-sizing:content-box}
+.list-h b{font-size:16px;font-weight:600}
+.list-h .me{margin-left:auto;font:500 11.5px var(--mono);color:var(--green);display:flex;align-items:center;gap:7px}
+.list-h .me::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green)}
+.list-h .me.off{color:var(--rose)}.list-h .me.off::before{background:var(--rose)}
+.filters{display:grid;gap:2px;padding:6px 8px;border-bottom:1px solid var(--line)}
+.filter{display:flex;align-items:center;justify-content:space-between;background:none;border:0;border-radius:8px;padding:9px 10px;font:500 14px var(--mono);color:var(--muted);text-align:left}
+.filter:hover{background:var(--panel-2)}
+.filter[aria-pressed="true"]{color:var(--ink);background:var(--panel-2)}
+.pill{min-width:22px;padding:2px 7px;border-radius:999px;background:var(--panel-2);color:var(--muted);font:600 11.5px var(--mono);text-align:center}
+.pill.hot{background:var(--green);color:#000}
+.rows{flex:1;min-height:0;overflow:auto}
+.row{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;padding:12px 18px;background:none;border:0;border-bottom:1px solid var(--line-soft);text-align:left}
+.row:hover{background:var(--panel-2)}
+.row[aria-current="true"]{background:var(--panel-2);box-shadow:inset 3px 0 0 var(--green)}
+.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font:600 14px var(--sans);color:#0B0B0C;flex:none}
+.who{min-width:0}
+.who b{display:block;font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who small{display:block;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row.unread .who small{color:var(--ink)}
+.meta{display:flex;flex-direction:column;align-items:flex-end;gap:6px;font:500 11px var(--mono);color:var(--faint)}
+.live{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(46,255,155,.2)}
+.none{padding:36px 22px;color:var(--muted);font-size:14px;text-align:center}
+
+/* conversation */
+.pane{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--bg)}
+.pane-empty{margin:auto;text-align:center;color:var(--muted);padding:24px}
+.pane-empty h2{margin:0 0 8px;font:400 30px/1.05 var(--display);text-transform:uppercase;color:var(--ink)}
+.conv{display:flex;flex-direction:column;flex:1;min-height:0}
+.conv-h{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--panel)}
+.conv-h .who{flex:1}
+.back{display:none;width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:none}
+.act{border:1px solid var(--line);background:none;border-radius:8px;padding:8px 12px;font:500 12.5px var(--mono);color:var(--muted)}
+.act:hover{color:var(--ink);border-color:var(--faint)}
+.act.danger:hover{color:var(--rose);border-color:var(--rose)}
+.msgs{flex:1;min-height:0;overflow:auto;padding:22px 20px;display:flex;flex-direction:column;gap:6px}
+.m{max-width:min(560px,82%);padding:10px 14px;border-radius:16px;white-space:pre-wrap;word-break:break-word;line-height:1.5}
+.m.v{align-self:flex-start;background:var(--panel-2);border-bottom-left-radius:4px}
+.m.o{align-self:flex-end;background:var(--green);color:#000;border-bottom-right-radius:4px}
+.t{font:400 10.5px var(--mono);color:var(--faint);margin:0 4px 8px}
+.t.o{align-self:flex-end}
+.sys{align-self:center;font-size:12.5px;color:var(--faint);padding:6px 0}
+.reply{display:flex;gap:10px;padding:14px 20px;border-top:1px solid var(--line);background:var(--panel)}
+.reply textarea{flex:1;resize:none;max-height:140px;min-height:46px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;outline:none}
+.reply textarea:focus{border-color:var(--green)}
+.send{width:46px;height:46px;border:0;border-radius:12px;background:var(--panel-2);color:var(--faint);display:grid;place-items:center;flex:none}
+.reply.ready .send{background:var(--green);color:#000}
+.send svg{width:18px;height:18px}
+#note{font-size:12.5px;color:var(--rose);padding:0 20px 8px;min-height:0}
+#note:empty{display:none}
+
+@media (max-width:800px){
+  .app{grid-template-columns:1fr}
+  .pane{display:none}
+  .app.open-pane .list{display:none}
+  .app.open-pane .pane{display:flex}
+  .back{display:grid;place-items:center}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <form class="gate-card" id="gate-form">
+    <h1>Inbox</h1>
+    <p>Enter the admin key to answer visitor chats. It stays in this tab only.</p>
+    <input id="key" type="password" autocomplete="current-password" placeholder="Admin key" aria-label="Admin key" required>
+    <button type="submit">Open inbox</button>
+    <div id="gate-err" role="alert"></div>
+  </form>
+</div>
+
+<div class="app" id="app" hidden>
+  <aside class="list" aria-label="Conversations">
+    <div class="list-h">
+      <span class="bell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/></svg><i id="bell-dot" hidden></i></span>
+      <b>Chat</b>
+      <span class="me" id="me">Online</span>
+    </div>
+    <div class="filters">
+      <button class="filter" type="button" id="f-open" aria-pressed="true"># open <span class="pill" id="c-open">0</span></button>
+      <button class="filter" type="button" id="f-closed" aria-pressed="false"># closed <span class="pill" id="c-closed">0</span></button>
+    </div>
+    <div class="rows" id="rows"></div>
+    <div class="filters" style="border-top:1px solid var(--line);border-bottom:0">
+      <button class="filter" type="button" id="alerts">Turn on desktop alerts</button>
+    </div>
+  </aside>
+
+  <main class="pane">
+    <div class="pane-empty" id="pane-empty">
+      <h2>Pick a conversation</h2>
+      <p>Visitors who write from the support widget show up on the left.</p>
+    </div>
+    <section class="conv" id="conv" hidden>
+      <div class="conv-h">
+        <button class="back" type="button" id="back" aria-label="Back to conversations">&larr;</button>
+        <span class="av" id="c-av"></span>
+        <div class="who"><b id="c-name"></b><small id="c-sub"></small></div>
+        <button class="act" type="button" id="close">Close</button>
+        <button class="act danger" type="button" id="delete">Delete</button>
+      </div>
+      <div class="msgs" id="msgs" aria-live="polite"></div>
+      <div id="note" role="alert"></div>
+      <form class="reply" id="reply">
+        <textarea id="text" rows="1" maxlength="2000" placeholder="Write a reply. Enter sends, Shift+Enter adds a line." aria-label="Reply"></textarea>
+        <button class="send" type="submit" aria-label="Send reply"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg></button>
+      </form>
+    </section>
+  </main>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const KEY = "operator_key_v1";
+  const S = {key: "", threads: [], cur: "", meta: null, msgs: [], last: 0, filter: "open", unreadSeen: 0, sending: false};
+  try { S.key = sessionStorage.getItem(KEY) || ""; } catch {}
+
+  function el(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;   // text only, never HTML
+    return n;
+  }
+  const hue = s => { let x = 0; for (const c of s) x = (x * 31 + c.charCodeAt(0)) % 360; return x; };
+  const nameOf = t => t.name || "Visitor " + t.id.slice(0, 4);
+  function paintAvatar(node, t) { node.textContent = (nameOf(t)[0] || "V").toUpperCase(); node.style.background = "hsl(" + hue(t.id) + " 70% 72%)"; }
+  function ago(ts) {
+    const s = Math.max(0, Math.floor(Date.now() / 1000 - ts));
+    if (s < 45) return "now";
+    if (s < 3600) return Math.round(s / 60) + "m";
+    if (s < 86400) return Math.round(s / 3600) + "h";
+    return Math.round(s / 86400) + "d";
+  }
+  const clock = ts => new Date(ts * 1000).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"});
+
+  /* ---------- api ---------- */
+  async function api(path, opts) {
+    try {
+      const r = await fetch(path, Object.assign({cache: "no-store"}, opts, {
+        headers: Object.assign({"Authorization": "Bearer " + S.key}, opts && opts.body ? {"Content-Type": "application/json"} : {})
+      }));
+      const data = await r.json().catch(() => ({}));
+      if (r.status === 401 || r.status === 404 && path === "/api/operator/threads") { showGate(r.status === 401 ? "That key was not accepted." : "The inbox is not enabled on the server."); return {ok: false, status: r.status, data}; }
+      return {ok: r.ok, status: r.status, data};
+    } catch { return {ok: false, status: 0, data: {}}; }
+  }
+  function showGate(msg) {
+    try { sessionStorage.removeItem(KEY); } catch {}
+    S.key = ""; $("app").hidden = true; $("gate").hidden = false; $("gate-err").textContent = msg || "";
+    $("key").value = ""; $("key").focus();
+  }
+  $("gate-form").addEventListener("submit", async e => {
+    e.preventDefault();
+    S.key = $("key").value.trim();
+    if (!S.key) return;
+    $("gate-err").textContent = "";
+    const r = await api("/api/operator/threads");
+    if (!r.ok) { if (r.status !== 401 && r.status !== 404) { $("gate-err").textContent = r.status === 429 ? "Too many attempts. Wait a few minutes." : "Could not reach the server."; } return; }
+    try { sessionStorage.setItem(KEY, S.key); } catch {}
+    enter(r.data.threads || []);
+  });
+
+  function enter(threads) {
+    $("gate").hidden = true; $("app").hidden = false;
+    S.threads = threads; renderList(); schedule();
+  }
+
+  /* ---------- list ---------- */
+  function renderList() {
+    const open = S.threads.filter(t => !t.closed), closed = S.threads.filter(t => t.closed);
+    $("c-open").textContent = open.length; $("c-closed").textContent = closed.length;
+    const unread = open.reduce((n, t) => n + (t.unread || 0), 0);
+    $("c-open").classList.toggle("hot", unread > 0);
+    $("bell-dot").hidden = unread === 0;
+    document.title = (unread ? "(" + unread + ") " : "") + "Inbox · Controller";
+    const rows = $("rows"); rows.replaceChildren();
+    const shown = S.filter === "open" ? open : closed;
+    if (!shown.length) { rows.appendChild(el("div", "none", S.filter === "open" ? "No open conversations. New messages appear here by themselves." : "Nothing closed yet.")); }
+    const now = Date.now() / 1000;
+    for (const t of shown) {
+      const row = el("button", "row" + (t.unread ? " unread" : ""));
+      row.type = "button";
+      if (t.id === S.cur) row.setAttribute("aria-current", "true");
+      const av = el("span", "av"); paintAvatar(av, t);
+      const who = el("div", "who"); who.append(el("b", "", nameOf(t)), el("small", "", t.preview || ""));
+      const meta = el("div", "meta");
+      meta.appendChild(el("span", "", ago(t.last)));
+      if (t.unread) meta.appendChild(el("span", "pill hot", String(t.unread)));
+      else if (t.last_from === "v" && now - t.last < 90) { const d = el("i", "live"); d.title = "Writing now"; meta.appendChild(d); }
+      row.append(av, who, meta);
+      row.addEventListener("click", () => openThread(t.id));
+      rows.appendChild(row);
+    }
+    // desktop alert when the unread total grows
+    if (unread > S.unreadSeen && (document.hidden || !S.cur) && window.Notification && Notification.permission === "granted") {
+      try { new Notification("New chat message", {body: (open.find(t => t.unread) || {}).preview || ""}); } catch {}
+    }
+    S.unreadSeen = unread;
+  }
+  async function loadThreads() {
+    const r = await api("/api/operator/threads");
+    $("me").textContent = r.ok ? "Online" : "Offline"; $("me").classList.toggle("off", !r.ok);
+    if (r.ok) { S.threads = r.data.threads || []; renderList(); }
+  }
+  $("f-open").addEventListener("click", () => setFilter("open"));
+  $("f-closed").addEventListener("click", () => setFilter("closed"));
+  function setFilter(f) {
+    S.filter = f;
+    $("f-open").setAttribute("aria-pressed", String(f === "open")); $("f-closed").setAttribute("aria-pressed", String(f === "closed"));
+    renderList();
+  }
+  $("alerts").addEventListener("click", async () => {
+    if (!window.Notification) { $("alerts").textContent = "Alerts are not supported here"; return; }
+    const p = await Notification.requestPermission();
+    $("alerts").textContent = p === "granted" ? "Desktop alerts are on" : "Desktop alerts are blocked";
+  });
+
+  /* ---------- conversation ---------- */
+  async function openThread(id) {
+    S.cur = id; S.msgs = []; S.last = 0; S.meta = null;
+    $("note").textContent = "";
+    $("app").classList.add("open-pane");
+    $("pane-empty").hidden = true; $("conv").hidden = false;
+    renderList();
+    await pollThread();
+    $("text").focus();
+  }
+  async function pollThread() {
+    if (!S.cur) return;
+    const id = S.cur;
+    const r = await api("/api/operator/thread/" + id + "?after=" + S.last);
+    if (id !== S.cur) return;
+    if (r.status === 404) { closePane(); return; }
+    if (!r.ok) return;
+    S.meta = r.data.thread;
+    for (const m of r.data.messages || []) { if (m.seq > S.last) { S.msgs.push(m); S.last = m.seq; } }
+    renderConv();
+  }
+  function renderConv() {
+    const t = S.meta; if (!t) return;
+    paintAvatar($("c-av"), t);
+    $("c-name").textContent = nameOf(t);
+    $("c-sub").textContent = (t.email ? t.email + " · " : "") + "started " + clock(t.created) + (t.closed ? " · closed" : "");
+    $("close").hidden = !!t.closed;
+    const box = $("msgs");
+    const stick = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+    box.replaceChildren();
+    for (const m of S.msgs) {
+      const mine = m.from === "operator";
+      box.appendChild(el("div", "m " + (mine ? "o" : "v"), m.text));
+      box.appendChild(el("div", "t" + (mine ? " o" : ""), clock(m.ts)));
+    }
+    if (t.closed) box.appendChild(el("div", "sys", "Closed. A new message from the visitor reopens it."));
+    if (stick) box.scrollTop = box.scrollHeight;
+  }
+  function closePane() {
+    S.cur = ""; S.meta = null; S.msgs = []; S.last = 0;
+    $("conv").hidden = true; $("pane-empty").hidden = false; $("app").classList.remove("open-pane");
+    renderList();
+  }
+  $("back").addEventListener("click", closePane);
+
+  const text = $("text"), reply = $("reply");
+  const syncReady = () => reply.classList.toggle("ready", text.value.trim().length > 0);
+  text.addEventListener("input", () => { syncReady(); text.style.height = "auto"; text.style.height = Math.min(text.scrollHeight, 140) + "px"; });
+  text.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); reply.requestSubmit(); } });
+  reply.addEventListener("submit", async e => {
+    e.preventDefault();
+    const msg = text.value.trim();
+    if (!msg || !S.cur || S.sending) return;
+    S.sending = true; $("note").textContent = "";
+    const r = await api("/api/operator/reply", {method: "POST", body: JSON.stringify({thread: S.cur, message: msg})});
+    S.sending = false;
+    if (!r.ok) { $("note").textContent = typeof r.data.detail === "string" ? r.data.detail : "The reply was not sent. Try again."; return; }
+    text.value = ""; text.style.height = "auto"; syncReady();
+    await pollThread(); loadThreads();
+  });
+  $("close").addEventListener("click", async () => {
+    if (!S.cur) return;
+    const r = await api("/api/operator/close/" + S.cur, {method: "POST"});
+    if (r.ok) { await pollThread(); loadThreads(); }
+  });
+  $("delete").addEventListener("click", async () => {
+    if (!S.cur || !confirm("Delete this conversation for good? The visitor will lose it too.")) return;
+    const r = await api("/api/operator/thread/" + S.cur, {method: "DELETE"});
+    if (r.ok) { closePane(); loadThreads(); }
+  });
+
+  /* ---------- timers: fast while visible, slow when hidden ---------- */
+  let listTimer = null, convTimer = null;
+  function schedule() {
+    clearTimeout(listTimer); clearTimeout(convTimer);
+    if (!S.key) return;
+    listTimer = setTimeout(async () => { await loadThreads(); schedule(); }, document.hidden ? 15000 : 4000);
+    convTimer = setTimeout(async () => { if (S.cur && !document.hidden) await pollThread(); }, 2500);
+  }
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && S.key) { loadThreads(); pollThread(); } });
+
+  /* ---------- start ---------- */
+  (async () => {
+    if (!S.key) { showGate(""); return; }
+    const r = await api("/api/operator/threads");
+    if (r.ok) enter(r.data.threads || []);
+  })();
+})();
+</script>
+</body>
+</html>
