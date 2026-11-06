@@ -1,0 +1,29 @@
+<!-- Paste into the columns row of /support. Add ONE footer link (below) and the small script at the end of the page. -->
+<section class="col" id="human-col">
+  <h3>Human support <span class="xp-tag">Experimental</span></h3>
+  <p>Want a real person? Start a chat and we'll get back to you within 24 hours.</p>
+  <a class="btn" href="/human-support">Start a chat <span id="hs-dot" hidden style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#2EFF9B;margin-left:6px"></span></a>
+</section>
+
+<!-- Footer link: -->
+<a href="/team">Team sign in</a>
+
+<!-- Tag style (add to your existing CSS; --exp must be your Experimental blue): -->
+<style>
+:root{--exp:#2F6BFF}
+.xp-tag{display:inline-block;vertical-align:middle;margin-left:8px;padding:1px 8px;border-radius:999px;background:var(--exp);color:#fff;font:600 11px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase}
+</style>
+
+<!-- Green dot when a reply arrived since the visitor last looked: -->
+<script>
+(function () {
+  var seen; try { seen = localStorage.getItem("hs_seen"); } catch (e) { return; }
+  fetch("/api/human/messages", { credentials: "same-origin", headers: { "X-Requested-With": "support" } })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) {
+      if (!d || !d.messages) return;
+      var op = d.messages.filter(function (m) { return m.sender === "operator"; }).pop();
+      if (op && String(op.id) !== seen) document.getElementById("hs-dot").hidden = false;
+    }).catch(function () {});
+})();
+</script>
