@@ -297,24 +297,3 @@ footer .brand .logo{background:var(--green);color:#000;padding:5px;border-radius
 .sw-launch:focus-visible,.sw-tab:focus-visible,.sw-x:focus-visible,.sw-ib:focus-visible,.sw-btn:focus-visible,.sw-chip:focus-visible{outline:3px solid rgba(10,122,71,.5);outline-offset:2px}
 @keyframes swb{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-4px);opacity:1}}
 @media (max-width:520px){.sw-launch{right:16px;bottom:16px}.sw-panel{right:16px;bottom:86px;height:min(650px,calc(100dvh - 108px))}}
-
-/* ---- Human chat (third tab in the support widget) ---- */
-.sw-tabs{grid-template-columns:repeat(3,1fr)}
-.sw-tab{position:relative}
-.sw-badge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--green);color:#000;font:700 11px/1 var(--mono)}
-.sw-badge[hidden]{display:none}
-.sw-tab .sw-badge{position:absolute;top:6px;left:calc(50% + 6px);border:2px solid var(--surface);box-sizing:content-box}
-.sw-launch .sw-badge{position:absolute;top:-7px;left:-7px;border:2px solid var(--canvas);box-sizing:content-box}
-.sw-pdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--faint);margin-right:8px;vertical-align:1px}
-.sw-pdot.online{background:var(--emerald);box-shadow:0 0 0 3px rgba(46,255,155,.3)}
-.sw-pdot.away{background:var(--amber)}
-.sw-bar small{display:flex;align-items:center}
-.sw-bar small .sw-pdot{margin-right:7px}
-.sw-msg.person{background:var(--green-soft);color:var(--ink)}
-.sw-msg.pending{opacity:.55}
-.sw-sys{align-self:center;text-align:center;font-size:12px;color:var(--faint);padding:4px 10px}
-.sw-field{display:block;width:100%;font:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 13px;margin-top:8px;outline:none;transition:border-color .2s,box-shadow .2s}
-.sw-field:focus{border-color:rgba(51,229,138,.55);box-shadow:0 0 0 4px rgba(51,229,138,.1)}
-.sw-empty .sw-field:first-of-type{margin-top:16px}
-.sw-fine{font-size:12px;color:var(--faint);margin-top:12px}
-.sw-fine a{color:var(--green-ink)}
