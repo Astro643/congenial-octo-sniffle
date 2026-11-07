@@ -12,6 +12,7 @@
 <title>Support · Controller</title>
 <meta name="description" content="Get help, fix common problems and reach us.">
 <link rel="stylesheet" href="/site.css?v=1755d10d">
+<link rel="stylesheet" href="/support-extras.css">
 </head>
 <body>
 <header class="nav">
@@ -34,16 +35,18 @@
 
   <div class="page">
     <h1>Support</h1>
-    <p class="lead">Fix a common problem in a minute, or ask our AI assistant. Support here is answered by AI.</p>
+    <p class="lead">Fix a common problem in a minute, ask our AI assistant, or talk to a real person.</p>
   </div>
 
   <section class="block" style="padding-top:44px">
     <div class="grid">
-      <div class="card"><div class="bar"></div><h3>Ask the AI assistant</h3><p>Instant answers any time of day. Support here is handled by AI, not by people.</p>
+      <div class="card"><div class="bar"></div><h3>Ask the AI assistant</h3><p>Instant answers any time of day, written by AI.</p>
         <p style="margin-top:16px"><button class="btn btn-primary btn-sm" type="button" data-open-support>Start a chat</button></p></div>
       <div class="card"><div class="bar"></div><h3>Live system status</h3><p>See whether Agents 1, 2 and 3 and the support assistant are running. Open the chat button in the corner and look at the Home tab.</p>
         <p style="margin-top:16px"><button class="btn btn-sm" type="button" data-open-support>See status</button></p></div>
       <div class="card"><div class="bar"></div><h3>Read first</h3><p>Most answers are in the <a href="/faq" style="color:var(--green-ink)">FAQ</a> and the <a href="/how-it-works" style="color:var(--green-ink)">walkthrough</a>.</p></div>
+      <div class="card"><div class="bar"></div><h3>Human support <span class="xp-tag">Experimental</span></h3><p>Want a real person? Start a chat and we&rsquo;ll get back to you within 24 hours.</p>
+        <p style="margin-top:16px"><a class="btn btn-sm" href="/human-support">Start a chat<span class="hs-dot" id="hs-dot" hidden></span></a></p></div>
     </div>
   </section>
 
@@ -100,6 +103,7 @@
         <a href="/support">Support</a>
         <a href="#" rel="noopener" data-support-url hidden>Discord server</a>
         <a href="#" data-support-email hidden></a>
+        <a href="/team">Team sign in</a>
       </div>
       <div>
         <h4>Legal</h4>
@@ -177,5 +181,6 @@
 <script src="/config.js"></script>
 <script src="/widget.js?v=71461157" defer></script>
 <script src="/site.js?v=360077ea" defer></script>
+<script src="/human-dot.js" defer></script>
 </body>
 </html>
