@@ -127,14 +127,14 @@ main{max-width:680px;margin:0 auto;padding:64px 24px 210px;min-height:100vh}
     processing: "Processing",
     waiting: "Waiting",
     cancelled: "Cancelled",
-    executed: "Executed",
+    completed: "Completed",
     blocked_by_traffic: "Traffic stall",
-    failed_sensibility: "Rejected by audit",
+    rejected: "Rejected",
     failed: "Failed",
     stalled: "No response",
     unknown: "Expired"
   };
-  const FINAL_STATES = new Set(["cancelled", "executed", "blocked_by_traffic", "failed", "failed_sensibility", "unknown", "stalled"]);
+  const FINAL_STATES = new Set(["cancelled", "completed", "blocked_by_traffic", "failed", "rejected", "unknown", "stalled"]);
   const POLL_MS = 1500, GIVE_UP_MS = 26 * 60 * 60 * 1000, STORE_KEY = "console_history_v1", MAX_ITEMS = 50;
 
   const feed = document.getElementById("feed");
@@ -218,24 +218,227 @@ main{max-width:680px;margin:0 auto;padding:64px 24px 210px;min-height:100vh}
     const prompt = input.value.trim();
     if (!prompt) return;
     btn.disabled = true; setHint("");
+    
+    // First, generate preview (dry run)
     try {
-      const r = await fetch("/api/execute", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({prompt})});
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok) {
-        if (r.status === 409) ping();
-        const msg = typeof data.detail === "string" ? data.detail : "Could not queue that goal.";
-        setHint(r.status === 401 ? "Session expired. Open a fresh link from your bot." : msg, true);
+      const previewR = await fetch("/api/preview", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({prompt})});
+      const previewData = await previewR.json().catch(() => ({}));
+      
+      if (!previewR.ok) {
+        const msg = typeof previewData.detail === "string" ? previewData.detail : "Could not generate preview.";
+        setHint(msg, true);
+        btn.disabled = !active; if (active) input.focus();
         return;
       }
-      const item = {id: data.command_id, prompt, ts: Date.now(), status: data.status || "processing", note: ""};
-      items.push(item); save(); render(item); setTimeout(ping, 4000);
-      input.value = ""; syncReady();
+      
+      // Show preview modal
+      showPreview(previewData, prompt);
     } catch {
       setHint("Network error. Please try again.", true);
-    } finally {
       btn.disabled = !active; if (active) input.focus();
     }
   });
+  
+  // Preview modal functionality
+  let previewTimeout = null;
+  let currentPreviewPrompt = "";
+  
+  function createPreviewModal(previewData) {
+    const modal = document.getElementById("preview-modal");
+    if (modal) modal.remove();
+    
+    const m = el("div", "preview-modal", null);
+    m.id = "preview-modal";
+    m.style.position = "fixed";
+    m.style.top = "0";
+    m.style.left = "0";
+    m.style.right = "0";
+    m.style.bottom = "0";
+    m.style.background = "rgba(0, 0, 0, 0.5)";
+    m.style.zIndex = "100";
+    m.style.display = "flex";
+    m.style.justifyContent = "center";
+    m.style.alignItems = "center";
+    m.style.padding = "20px";
+    
+    const card = el("div", "preview-card");
+    card.style.background = "var(--surface)";
+    card.style.border = "1px solid var(--border)";
+    card.style.borderRadius = "14px";
+    card.style.padding = "24px";
+    card.style.maxWidth = "500px";
+    card.style.width = "100%";
+    card.style.maxHeight = "80vh";
+    card.style.overflow = "auto";
+    
+    const title = el("h2", null, "Preview (Dry Run)");
+    title.style.font = "var(--display)";
+    title.style.fontSize = "24px";
+    title.style.margin = "0 0 16px";
+    title.style.textTransform = "uppercase";
+    title.style.letterSpacing = "0.005em";
+    card.appendChild(title);
+    
+    if (previewData.incomplete || !previewData.complete) {
+      const question = el("p", "preview-question", previewData.question || "Can you clarify your request?");
+      question.style.color = "var(--amber)";
+      question.style.margin = "16px 0";
+      question.style.fontWeight = "600";
+      card.appendChild(question);
+    }
+    
+    if (previewData.summary) {
+      const summary = el("p", "preview-summary", previewData.summary);
+      summary.style.color = "var(--muted)";
+      summary.style.margin = "8px 0 16px";
+      summary.style.fontSize = "14px";
+      card.appendChild(summary);
+    }
+    
+    const stepsTitle = el("h3", null, "Planned Steps:");
+    stepsTitle.style.fontSize = "16px";
+    stepsTitle.style.margin = "16px 0 8px";
+    stepsTitle.style.color = "var(--ink)";
+    card.appendChild(stepsTitle);
+    
+    const stepsList = el("div", "preview-steps");
+    stepsList.style.display = "flex";
+    stepsList.style.flexDirection = "column";
+    stepsList.style.gap = "8px";
+    
+    if (previewData.steps && previewData.steps.length > 0) {
+      previewData.steps.forEach((step, idx) => {
+        const stepEl = el("div", "preview-step");
+        stepEl.style.background = "var(--mono-bg)";
+        stepEl.style.borderRadius = "8px";
+        stepEl.style.padding = "10px 12px";
+        stepEl.style.fontSize = "14px";
+        stepEl.style.display = "flex";
+        stepEl.style.alignItems = "flex-start";
+        stepEl.style.gap = "10px";
+        
+        const stepNum = el("span", "preview-step-num", (idx + 1).toString());
+        stepNum.style.background = "var(--dark)";
+        stepNum.style.color = "var(--green)";
+        stepNum.style.borderRadius = "50%";
+        stepNum.style.width = "24px";
+        stepNum.style.height = "24px";
+        stepNum.style.display = "flex";
+        stepNum.style.alignItems = "center";
+        stepNum.style.justifyContent = "center";
+        stepNum.style.fontSize = "12px";
+        stepNum.style.fontWeight = "700";
+        stepNum.style.flexShrink = "0";
+        
+        const stepLabel = el("span", "preview-step-label", step.label || step.action);
+        stepLabel.style.color = "var(--ink)";
+        stepLabel.style.flex = "1";
+        
+        stepEl.appendChild(stepNum);
+        stepEl.appendChild(stepLabel);
+        stepsList.appendChild(stepEl);
+      });
+    } else {
+      const noSteps = el("p", null, "No steps generated.");
+      noSteps.style.color = "var(--muted)";
+      noSteps.style.fontStyle = "italic";
+      stepsList.appendChild(noSteps);
+    }
+    card.appendChild(stepsList);
+    
+    const actions = el("div", "preview-actions");
+    actions.style.display = "flex";
+    actions.style.gap = "12px";
+    actions.style.marginTop = "20px";
+    actions.style.justifyContent = "flex-end";
+    
+    const cancelBtn = el("button", "preview-btn preview-cancel", "Cancel");
+    cancelBtn.type = "button";
+    cancelBtn.style.padding = "10px 20px";
+    cancelBtn.style.borderRadius = "8px";
+    cancelBtn.style.border = "1px solid var(--border)";
+    cancelBtn.style.background = "transparent";
+    cancelBtn.style.color = "var(--ink)";
+    cancelBtn.style.cursor = "pointer";
+    cancelBtn.style.font = "var(--mono)";
+    cancelBtn.style.fontSize = "13px";
+    cancelBtn.addEventListener("click", () => {
+      clearTimeout(previewTimeout);
+      m.remove();
+      btn.disabled = !active; if (active) input.focus();
+    });
+    
+    const confirmBtn = el("button", "preview-btn preview-confirm", previewData.incomplete ? "Answer Question" : "Execute");
+    confirmBtn.type = "button";
+    confirmBtn.style.padding = "10px 20px";
+    confirmBtn.style.borderRadius = "8px";
+    confirmBtn.style.border = "0";
+    confirmBtn.style.background = "var(--green)";
+    confirmBtn.style.color = "#000";
+    confirmBtn.style.cursor = "pointer";
+    confirmBtn.style.font = "var(--mono)";
+    confirmBtn.style.fontSize = "13px";
+    confirmBtn.style.fontWeight = "600";
+    confirmBtn.addEventListener("click", async () => {
+      clearTimeout(previewTimeout);
+      m.remove();
+      
+      if (previewData.incomplete || !previewData.complete) {
+        // Ask the question
+        executeWithPrompt(currentPreviewPrompt);
+      } else {
+        // Auto-execute after preview
+        executeWithPrompt(currentPreviewPrompt);
+      }
+    });
+    
+    actions.appendChild(cancelBtn);
+    actions.appendChild(confirmBtn);
+    card.appendChild(actions);
+    
+    m.appendChild(card);
+    document.body.appendChild(m);
+    
+    // Auto-hide and execute after 9 seconds if complete
+    if (previewData.complete && !previewData.incomplete) {
+      previewTimeout = setTimeout(() => {
+        if (m.parentNode) {
+          m.remove();
+          executeWithPrompt(currentPreviewPrompt);
+        }
+      }, 9000);
+    }
+    
+    return m;
+  }
+  
+  function showPreview(previewData, prompt) {
+    currentPreviewPrompt = prompt;
+    createPreviewModal(previewData);
+  }
+  
+  function executeWithPrompt(prompt) {
+    btn.disabled = true; setHint("");
+    fetch("/api/execute", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({prompt})})
+      .then(r => r.json().catch(() => ({})))
+      .then(data => {
+        if (!r.ok) {
+          if (r.status === 409) ping();
+          const msg = typeof data.detail === "string" ? data.detail : "Could not queue that goal.";
+          setHint(r.status === 401 ? "Session expired. Open a fresh link from your bot." : msg, true);
+          return;
+        }
+        const item = {id: data.command_id, prompt, ts: Date.now(), status: data.status || "processing", note: ""};
+        items.push(item); save(); render(item); setTimeout(ping, 4000);
+        input.value = ""; syncReady();
+      })
+      .catch(() => {
+        setHint("Network error. Please try again.", true);
+      })
+      .finally(() => {
+        btn.disabled = !active; if (active) input.focus();
+      });
+  }
 
   const gate = document.getElementById("gate"), gateTitle = document.getElementById("gate-title"), gateNum = document.getElementById("gate-num"), gateText = document.getElementById("gate-text");
   const gateBar = document.getElementById("gate-bar");
