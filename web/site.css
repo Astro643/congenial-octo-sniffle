@@ -304,3 +304,9 @@ footer .brand .logo{background:var(--green);color:#000;padding:5px;border-radius
 @keyframes motion-drop{to{opacity:1;transform:translateY(0)}}
 @keyframes motion-slide-in{to{opacity:1;transform:translateX(0)}}
 @media (prefers-reduced-motion:reduce){.motion-ready{opacity:1;transform:none;animation:none}}
+
+.legacy-page-shell{isolation:isolate;min-height:100vh;position:relative}
+.particle-backdrop{inset:0;opacity:.72;pointer-events:none;position:fixed;z-index:-1}
+.particle-backdrop canvas{pointer-events:auto}
+.legacy-page-content{position:relative;z-index:1}
+@media (prefers-reduced-motion:reduce){.particle-backdrop{display:none}}
