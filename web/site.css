@@ -297,3 +297,10 @@ footer .brand .logo{background:var(--green);color:#000;padding:5px;border-radius
 .sw-launch:focus-visible,.sw-tab:focus-visible,.sw-x:focus-visible,.sw-ib:focus-visible,.sw-btn:focus-visible,.sw-chip:focus-visible{outline:3px solid rgba(10,122,71,.5);outline-offset:2px}
 @keyframes swb{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-4px);opacity:1}}
 @media (max-width:520px){.sw-launch{right:16px;bottom:16px}.sw-panel{right:16px;bottom:86px;height:min(650px,calc(100dvh - 108px))}}
+
+/* Remix motion states */
+.motion-ready{opacity:0;transform:translateY(14px);animation:motion-drop .52s cubic-bezier(.22,1,.36,1) forwards;animation-delay:calc(var(--motion-index, 0) * 70ms + 120ms)}
+.sidebar.motion-ready,[data-sidebar].motion-ready{transform:translateX(-18px);animation-name:motion-slide-in}
+@keyframes motion-drop{to{opacity:1;transform:translateY(0)}}
+@keyframes motion-slide-in{to{opacity:1;transform:translateX(0)}}
+@media (prefers-reduced-motion:reduce){.motion-ready{opacity:1;transform:none;animation:none}}
