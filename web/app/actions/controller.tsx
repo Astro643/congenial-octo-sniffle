@@ -8,7 +8,6 @@ import { HomePage, meta as homeMeta } from "../pages/home.tsx"
 import { HowItWorksPage, meta as howItWorksMeta } from "../pages/how-it-works.tsx"
 import { PrivacyPage, meta as privacyMeta } from "../pages/privacy.tsx"
 import { SupportPage, meta as supportMeta } from "../pages/support.tsx"
-import { TeamPage, meta as teamMeta } from "../pages/team.tsx"
 import { TermsPage, meta as termsMeta } from "../pages/terms.tsx"
 import { NotFoundPage, meta as notFoundMeta } from "../pages/not-found.tsx"
 import { Document } from "./document.tsx"
@@ -64,13 +63,6 @@ export default createController(routes, {
       return context.render(
         <Document meta={dashboardMeta}>
           <DashboardPage />
-        </Document>,
-      )
-    },
-    team(context) {
-      return context.render(
-        <Document meta={teamMeta}>
-          <TeamPage />
         </Document>,
       )
     },

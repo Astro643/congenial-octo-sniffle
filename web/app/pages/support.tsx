@@ -224,9 +224,6 @@ export function SupportPage() {
                   {"Discord server"}
                 </a>
                 <a href={"#"} data-support-email={""} hidden></a>
-                <a href={"/team"}>
-                  {"Team sign in"}
-                </a>
               </div>
               <div>
                 <h4>
