@@ -1,12 +1,3 @@
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Human support</title><meta name="robots" content="noindex"><link rel="stylesheet" href="chat.css"></head>
-<body><main class="wrap">
-<div class="top"><h1>Human support <span class="xp-tag">Experimental</span></h1><p class="sub">Only you and our team can see this conversation. Messages are saved and read by a person.</p></div>
-<div id="stage"></div>
-</main>
-<script src="chat-ui.js"></script>
-<script>
 (function () {
   var h = CU.h, SEEN = "hs_seen", GATE = "hs_gate", app = CU.scene({closeHref:"/support",closeLabel:"Back to support"});
   document.getElementById("stage").appendChild(app.root);
@@ -44,4 +35,3 @@
   if (store.get(GATE)) return chat();
   CU.api("/api/human/messages").then(function (d) { if (d && d.messages && d.messages.length) chat(); else gate(); }).catch(gate);
 })();
-</script></body></html>

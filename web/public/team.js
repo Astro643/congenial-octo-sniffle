@@ -1,11 +1,3 @@
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Team</title><meta name="robots" content="noindex,nofollow"><link rel="stylesheet" href="chat.css"></head>
-<body><main class="wrap">
-<div class="top"><h1>Team</h1><p class="sub">Support inbox</p></div>
-<div id="stage"></div></main>
-<script src="chat-ui.js"></script>
-<script>
 (function () {
   var h = CU.h, timer = null, app = CU.scene({closeHref:"/",closeLabel:"Back to site"});
   document.getElementById("stage").appendChild(app.root);
@@ -71,4 +63,3 @@
   // Already signed in? The inbox call tells us.
   CU.api("/api/operator/inbox").then(inbox).catch(login);
 })();
-</script></body></html>
