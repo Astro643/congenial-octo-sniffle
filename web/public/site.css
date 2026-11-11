@@ -43,9 +43,6 @@ main{flex:1}
 .btn-primary{background:var(--btn);color:#fff;border-bottom:4px solid #000;padding:15px 26px 12px;box-shadow:0 1px 0 rgba(255,255,255,.1) inset}
 .btn-primary:hover{background:#403E40}
 .btn-primary:active{transform:translateY(2px);border-bottom-width:2px;padding-bottom:14px}
-.btn-secondary{background:#fff;color:#000;border:1px solid var(--border);padding:14px 20px 11px}
-.btn-secondary:hover{background:rgba(255,255,255,.7)}
-.btn-secondary::before{border-left-color:#000}
 .btn-sm{padding:12px 20px 9px;font-size:12px}
 .btn-sm.btn-primary:active{padding-bottom:11px}
 .btn:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid rgba(6,116,60,.55);outline-offset:2px}
@@ -298,16 +295,6 @@ footer .brand .logo{background:var(--green);color:#000;padding:5px;border-radius
 @keyframes swb{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-4px);opacity:1}}
 @media (max-width:520px){.sw-launch{right:16px;bottom:16px}.sw-panel{right:16px;bottom:86px;height:min(650px,calc(100dvh - 108px))}}
 
-/* Remix motion states */
-.motion-ready{opacity:0;transform:translateY(14px);animation:motion-drop .52s cubic-bezier(.22,1,.36,1) forwards;animation-delay:calc(var(--motion-index, 0) * 70ms + 120ms)}
-.sidebar.motion-ready,[data-sidebar].motion-ready{transform:translateX(-18px);animation-name:motion-slide-in}
-@keyframes motion-drop{to{opacity:1;transform:translateY(0)}}
-@keyframes motion-slide-in{to{opacity:1;transform:translateX(0)}}
-@media (prefers-reduced-motion:reduce){.motion-ready{opacity:1;transform:none;animation:none}}
-
-.legacy-page-shell{isolation:isolate;min-height:100vh;position:relative}
-.legacy-page-content{position:relative;z-index:1}
-
 /* ---- Polish pass ---- */
 .nav{border-bottom:1px solid rgba(5,5,5,.06)}
 h1,h2{text-wrap:balance}
@@ -322,7 +309,7 @@ h1,h2{text-wrap:balance}
 .demo:hover{transform:translateY(-3px)}
 details{transition:box-shadow .2s ease,border-color .2s ease}
 details:hover{border-color:#BDBCB7}
-.btn-primary,.btn-secondary,.sw-btn{transition:background .15s,transform .08s,box-shadow .15s}
+.btn-primary,.sw-btn{transition:background .15s,transform .08s,box-shadow .15s}
 @media (max-width:760px){
   /* keep the page links reachable on phones: second row under the logo */
   .nav-in{flex-wrap:wrap;height:auto;padding:12px 0 10px;row-gap:10px}

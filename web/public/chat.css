@@ -1,6 +1,6 @@
 /* Human support / team. The scene is drawn on the reference's own 538x303 grid (1 unit = --u) so it scales exactly with the width. */
 :root{--bg:#EEEDE8;--ink:#050505;--muted:#5F5E61;--scene:#1B1A1D;--panel:#121113;--panel2:#0E0D0F;--line:#2A282B;--wire:#76757A;
-  --ptext:#F2F1EC;--pmute:#8D8A90;--row:#262427;--green:#2EFF9B;--exp:#2F6BFF}
+  --ptext:#F2F1EC;--pmute:#8D8A90;--row:#262427;--green:#2EFF9B}
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
@@ -8,7 +8,6 @@ body{background:var(--bg);color:var(--ink);font:15px/1.5 Inter,ui-sans-serif,sys
 .top{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:0 0 16px}
 h1{font:400 clamp(30px,4vw,44px)/1 Anton,Impact,'Arial Narrow Bold',sans-serif;text-transform:uppercase;margin:0}
 .sub{color:var(--muted);margin:0;font-size:14px}
-.xp-tag{display:inline-block;vertical-align:middle;margin-left:8px;padding:1px 8px;border-radius:999px;background:var(--exp);color:#fff;font:600 11px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase}
 a{color:#0A7A43}
 
 /* ---- scene ---- */
