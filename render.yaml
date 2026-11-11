@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: controller-web
+    runtime: node
+    rootDir: web
+    buildCommand: npm ci
+    startCommand: npm start
+    plan: free
+    healthCheckPath: /
