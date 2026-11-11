@@ -14,7 +14,7 @@ export const links: LinksFunction = () => [
 ]
 
 export default function SupportRoute() {
-  useScripts(["/config.js","/widget.js","/site.js","/human-dot.js"])
+  useScripts(["/config.js","/widget.js","/site.js"])
   return (
     <>
       <header className={"nav"}>
@@ -98,24 +98,6 @@ export default function SupportRoute() {
                     {"walkthrough"}
                   </a>
                   {"."}
-                </p>
-              </div>
-              <div className={"card"}>
-                <div className={"bar"}></div>
-                <h3>
-                  {"Human support "}
-                  <span className={"xp-tag"}>
-                    {"Experimental"}
-                  </span>
-                </h3>
-                <p>
-                  {"Want a real person? Start a chat and we’ll get back to you within 24 hours."}
-                </p>
-                <p style={{ marginTop: "16px" }}>
-                  <a className={"btn btn-sm"} href={"/human-support"}>
-                    {"Start a chat"}
-                    <span className={"hs-dot"} id={"hs-dot"} hidden></span>
-                  </a>
                 </p>
               </div>
             </div>

@@ -3,7 +3,6 @@ import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "@remix-run/reac
 import motionStyles from "./styles/motion.css?url"
 import { PageMotion } from "./components/page-motion"
 import { ParticleBackdrop } from "./components/particle-backdrop"
-import { VersionBadge } from "./components/version-badge"
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: motionStyles },
@@ -32,7 +31,6 @@ export default function App() {
       <PageMotion>
         <Outlet />
       </PageMotion>
-      <VersionBadge />
       <ScrollRestoration />
       <Scripts />
     </body>

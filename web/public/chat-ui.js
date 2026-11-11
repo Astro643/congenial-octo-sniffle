@@ -1,4 +1,4 @@
-/* Shared helpers for human-support.html and team.html. Everything the visitors type is shown with textContent, never as HTML. */
+/* Shared helpers for the team chat pages. Everything the visitors type is shown with textContent, never as HTML. */
 (function () {
   "use strict";
   var NS = "http://www.w3.org/2000/svg", INK = "#1B1A1C";
