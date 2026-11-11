@@ -1,0 +1,371 @@
+(() => {
+  "use strict";
+  const LABELS = {
+    processing: "Processing",
+    waiting: "Waiting",
+    cancelled: "Cancelled",
+    completed: "Completed",
+    blocked_by_traffic: "Traffic stall",
+    rejected: "Rejected",
+    failed: "Failed",
+    stalled: "No response",
+    unknown: "Expired"
+  };
+  const FINAL_STATES = new Set(["cancelled", "completed", "blocked_by_traffic", "failed", "rejected", "unknown", "stalled"]);
+  const POLL_MS = 1500, GIVE_UP_MS = 26 * 60 * 60 * 1000, STORE_KEY = "console_history_v1", MAX_ITEMS = 50;
+
+  const feed = document.getElementById("feed");
+  const form = document.getElementById("form");
+  const input = document.getElementById("prompt");
+  const btn = document.getElementById("go");
+  const hint = document.getElementById("hint");
+
+  let items = [];
+
+  const load = () => { try { return JSON.parse(localStorage.getItem(STORE_KEY) || "[]"); } catch { return []; } };
+  const save = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify(items.slice(-MAX_ITEMS))); } catch {} };
+
+  function setHint(msg, isErr) { hint.textContent = msg || ""; hint.className = isErr ? "err" : ""; }
+
+  function el(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+
+  function render(item) {
+    let node = feed.querySelector(`[data-id="${item.id}"]`);
+    const fresh = !node;
+    if (fresh) { node = el("article", "op"); node.dataset.id = item.id; feed.appendChild(node); }
+    node.replaceChildren();
+    node.appendChild(el("div", "bubble", item.prompt));
+
+    const row = el("div", "status-row");
+    const badge = el("span", "badge s-" + item.status);
+    badge.appendChild(document.createElement("i"));
+    badge.appendChild(document.createTextNode(LABELS[item.status] || item.status));
+    row.appendChild(badge);
+    row.appendChild(el("span", "op-id", item.id));
+    row.appendChild(el("span", "op-time", new Date(item.ts).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})));
+    if (item.status === "waiting") {
+      const cancel = el("button", "op-cancel", "Cancel");
+      cancel.type = "button"; cancel.title = "Cancel this waiting request. Steps that already ran are not undone.";
+      cancel.addEventListener("click", async () => {
+        cancel.disabled = true;
+        try {
+          const r = await fetch("/api/cancel/" + encodeURIComponent(item.id), {method: "POST"});
+          const d = await r.json().catch(() => ({}));
+          if (r.ok) { item.status = "cancelled"; item.note = ""; render(item); save(); }
+          else { setHint(typeof d.detail === "string" ? d.detail : "Could not cancel.", true); cancel.disabled = false; }
+        } catch { setHint("Network error. Please try again.", true); cancel.disabled = false; }
+      });
+      row.appendChild(cancel);
+    }
+    node.appendChild(row);
+
+    if (item.note) node.appendChild(el("div", "op-note", item.note));
+    if (fresh) window.scrollTo({top: document.body.scrollHeight, behavior: "smooth"});
+  }
+
+  async function poll() {
+    const pending = items.filter(i => !FINAL_STATES.has(i.status));
+    await Promise.all(pending.map(async item => {
+      if (Date.now() - item.ts > GIVE_UP_MS) { item.status = "stalled"; render(item); return; }
+      try {
+        const r = await fetch("/api/status/" + encodeURIComponent(item.id), {cache: "no-store"});
+        if (r.status === 401) { setHint("Session expired. Open a fresh link from your bot.", true); return; }
+        if (!r.ok) return;
+        const data = await r.json();
+        const note = data.error || data.result || "";
+        if (data.status !== item.status || note !== item.note) {
+          item.status = data.status; item.note = note; render(item);
+          if (FINAL_STATES.has(data.status)) ping();
+        }
+      } catch {}
+    }));
+    save();
+  }
+
+  const syncReady = () => form.classList.toggle("ready", input.value.trim().length > 0);
+  input.addEventListener("input", syncReady);
+
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const prompt = input.value.trim();
+    if (!prompt) return;
+    btn.disabled = true; setHint("");
+    
+    // First, generate preview (dry run)
+    try {
+      const previewR = await fetch("/api/preview", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({prompt})});
+      const previewData = await previewR.json().catch(() => ({}));
+      
+      if (!previewR.ok) {
+        const msg = typeof previewData.detail === "string" ? previewData.detail : "Could not generate preview.";
+        setHint(msg, true);
+        btn.disabled = !active; if (active) input.focus();
+        return;
+      }
+      
+      // Show preview modal
+      showPreview(previewData, prompt);
+    } catch {
+      setHint("Network error. Please try again.", true);
+      btn.disabled = !active; if (active) input.focus();
+    }
+  });
+  
+  // Preview modal functionality
+  let previewTimeout = null;
+  let currentPreviewPrompt = "";
+  
+  function createPreviewModal(previewData) {
+    const modal = document.getElementById("preview-modal");
+    if (modal) modal.remove();
+    
+    const m = el("div", "preview-modal", null);
+    m.id = "preview-modal";
+    m.style.position = "fixed";
+    m.style.top = "0";
+    m.style.left = "0";
+    m.style.right = "0";
+    m.style.bottom = "0";
+    m.style.background = "rgba(0, 0, 0, 0.5)";
+    m.style.zIndex = "100";
+    m.style.display = "flex";
+    m.style.justifyContent = "center";
+    m.style.alignItems = "center";
+    m.style.padding = "20px";
+    
+    const card = el("div", "preview-card");
+    card.style.background = "var(--surface)";
+    card.style.border = "1px solid var(--border)";
+    card.style.borderRadius = "14px";
+    card.style.padding = "24px";
+    card.style.maxWidth = "500px";
+    card.style.width = "100%";
+    card.style.maxHeight = "80vh";
+    card.style.overflow = "auto";
+    
+    const title = el("h2", null, "Preview (Dry Run)");
+    title.style.font = "var(--display)";
+    title.style.fontSize = "24px";
+    title.style.margin = "0 0 16px";
+    title.style.textTransform = "uppercase";
+    title.style.letterSpacing = "0.005em";
+    card.appendChild(title);
+    
+    if (previewData.incomplete || !previewData.complete) {
+      const question = el("p", "preview-question", previewData.question || "Can you clarify your request?");
+      question.style.color = "var(--amber)";
+      question.style.margin = "16px 0";
+      question.style.fontWeight = "600";
+      card.appendChild(question);
+    }
+    
+    if (previewData.summary) {
+      const summary = el("p", "preview-summary", previewData.summary);
+      summary.style.color = "var(--muted)";
+      summary.style.margin = "8px 0 16px";
+      summary.style.fontSize = "14px";
+      card.appendChild(summary);
+    }
+    
+    const stepsTitle = el("h3", null, "Planned Steps:");
+    stepsTitle.style.fontSize = "16px";
+    stepsTitle.style.margin = "16px 0 8px";
+    stepsTitle.style.color = "var(--ink)";
+    card.appendChild(stepsTitle);
+    
+    const stepsList = el("div", "preview-steps");
+    stepsList.style.display = "flex";
+    stepsList.style.flexDirection = "column";
+    stepsList.style.gap = "8px";
+    
+    if (previewData.steps && previewData.steps.length > 0) {
+      previewData.steps.forEach((step, idx) => {
+        const stepEl = el("div", "preview-step");
+        stepEl.style.background = "var(--mono-bg)";
+        stepEl.style.borderRadius = "8px";
+        stepEl.style.padding = "10px 12px";
+        stepEl.style.fontSize = "14px";
+        stepEl.style.display = "flex";
+        stepEl.style.alignItems = "flex-start";
+        stepEl.style.gap = "10px";
+        
+        const stepNum = el("span", "preview-step-num", (idx + 1).toString());
+        stepNum.style.background = "var(--dark)";
+        stepNum.style.color = "var(--green)";
+        stepNum.style.borderRadius = "50%";
+        stepNum.style.width = "24px";
+        stepNum.style.height = "24px";
+        stepNum.style.display = "flex";
+        stepNum.style.alignItems = "center";
+        stepNum.style.justifyContent = "center";
+        stepNum.style.fontSize = "12px";
+        stepNum.style.fontWeight = "700";
+        stepNum.style.flexShrink = "0";
+        
+        const stepLabel = el("span", "preview-step-label", step.label || step.action);
+        stepLabel.style.color = "var(--ink)";
+        stepLabel.style.flex = "1";
+        
+        stepEl.appendChild(stepNum);
+        stepEl.appendChild(stepLabel);
+        stepsList.appendChild(stepEl);
+      });
+    } else {
+      const noSteps = el("p", null, "No steps generated.");
+      noSteps.style.color = "var(--muted)";
+      noSteps.style.fontStyle = "italic";
+      stepsList.appendChild(noSteps);
+    }
+    card.appendChild(stepsList);
+    
+    const actions = el("div", "preview-actions");
+    actions.style.display = "flex";
+    actions.style.gap = "12px";
+    actions.style.marginTop = "20px";
+    actions.style.justifyContent = "flex-end";
+    
+    const cancelBtn = el("button", "preview-btn preview-cancel", "Cancel");
+    cancelBtn.type = "button";
+    cancelBtn.style.padding = "10px 20px";
+    cancelBtn.style.borderRadius = "8px";
+    cancelBtn.style.border = "1px solid var(--border)";
+    cancelBtn.style.background = "transparent";
+    cancelBtn.style.color = "var(--ink)";
+    cancelBtn.style.cursor = "pointer";
+    cancelBtn.style.font = "var(--mono)";
+    cancelBtn.style.fontSize = "13px";
+    cancelBtn.addEventListener("click", () => {
+      clearTimeout(previewTimeout);
+      m.remove();
+      btn.disabled = !active; if (active) input.focus();
+    });
+    
+    const confirmBtn = el("button", "preview-btn preview-confirm", previewData.incomplete ? "Answer Question" : "Execute");
+    confirmBtn.type = "button";
+    confirmBtn.style.padding = "10px 20px";
+    confirmBtn.style.borderRadius = "8px";
+    confirmBtn.style.border = "0";
+    confirmBtn.style.background = "var(--green)";
+    confirmBtn.style.color = "#000";
+    confirmBtn.style.cursor = "pointer";
+    confirmBtn.style.font = "var(--mono)";
+    confirmBtn.style.fontSize = "13px";
+    confirmBtn.style.fontWeight = "600";
+    confirmBtn.addEventListener("click", async () => {
+      clearTimeout(previewTimeout);
+      m.remove();
+      
+      if (previewData.incomplete || !previewData.complete) {
+        // Ask the question
+        executeWithPrompt(currentPreviewPrompt);
+      } else {
+        // Auto-execute after preview
+        executeWithPrompt(currentPreviewPrompt);
+      }
+    });
+    
+    actions.appendChild(cancelBtn);
+    actions.appendChild(confirmBtn);
+    card.appendChild(actions);
+    
+    m.appendChild(card);
+    document.body.appendChild(m);
+    
+    // Auto-hide and execute after 9 seconds if complete
+    if (previewData.complete && !previewData.incomplete) {
+      previewTimeout = setTimeout(() => {
+        if (m.parentNode) {
+          m.remove();
+          executeWithPrompt(currentPreviewPrompt);
+        }
+      }, 9000);
+    }
+    
+    return m;
+  }
+  
+  function showPreview(previewData, prompt) {
+    currentPreviewPrompt = prompt;
+    createPreviewModal(previewData);
+  }
+  
+  function executeWithPrompt(prompt) {
+    btn.disabled = true; setHint("");
+    fetch("/api/execute", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({prompt})})
+      .then(r => r.json().catch(() => ({})))
+      .then(data => {
+        if (!r.ok) {
+          if (r.status === 409) ping();
+          const msg = typeof data.detail === "string" ? data.detail : "Could not queue that goal.";
+          setHint(r.status === 401 ? "Session expired. Open a fresh link from your bot." : msg, true);
+          return;
+        }
+        const item = {id: data.command_id, prompt, ts: Date.now(), status: data.status || "processing", note: ""};
+        items.push(item); save(); render(item); setTimeout(ping, 4000);
+        input.value = ""; syncReady();
+      })
+      .catch(() => {
+        setHint("Network error. Please try again.", true);
+      })
+      .finally(() => {
+        btn.disabled = !active; if (active) input.focus();
+      });
+  }
+
+  const gate = document.getElementById("gate"), gateTitle = document.getElementById("gate-title"), gateNum = document.getElementById("gate-num"), gateText = document.getElementById("gate-text");
+  const gateBar = document.getElementById("gate-bar");
+  const chip = document.getElementById("agent-chip");
+  let active = false, pingTimer = null;
+  function setActive(on, agent) {
+    active = on;
+    gate.classList.toggle("show", !on);
+    chip.classList.toggle("show", on && !!agent);
+    if (on && agent) chip.textContent = "Agent " + agent;
+    input.disabled = !on; btn.disabled = !on;
+    if (on) setTimeout(() => input.focus(), 50);
+  }
+  function showGate(title, num, text, bar) {
+    gateTitle.textContent = title; gateNum.textContent = num || ""; gateText.textContent = text;
+    gateBar.style.display = bar ? "" : "none";
+  }
+
+  async function ping() {
+    clearTimeout(pingTimer);
+    let delay = 5000;
+    try {
+      const r = await fetch("/api/session/ping", {method: "POST", cache: "no-store"});
+      if (r.status === 401) { showGate("Session expired", "", "Open a fresh link from your bot to continue.", false); setActive(false); return; }
+      if (!r.ok) throw new Error("ping");
+      const d = await r.json();
+      if (d.state === "active") { setActive(true, d.agent); delay = 30000; }
+      else if (d.state === "waiting") {
+        setActive(false);
+        showGate("You are in line", "#" + d.position,
+          d.ahead === 0 ? "You are next. An agent frees up when someone closes their console."
+                        : d.ahead + (d.ahead === 1 ? " person is" : " people are") + " ahead of you. Keep this tab open to hold your place.", true);
+      } else if (d.state === "idle_released") {
+        setActive(false); showGate("Agent released", "", "You were idle while others were waiting. Rejoining the line…", true); delay = 1500;
+      } else if (d.state === "full") { setActive(false); showGate("Line is full", "", "Too many people are waiting right now. Please try again in a few minutes.", false); delay = 30000; }
+      else { setActive(false); showGate("Unavailable", "", "No agent is set up right now. Please try again later.", false); delay = 30000; }
+    } catch { delay = 6000; }
+    pingTimer = setTimeout(ping, delay);
+  }
+
+  window.addEventListener("pagehide", () => { try { navigator.sendBeacon("/api/session/leave"); } catch {} });
+  setActive(false);
+  showGate("Checking…", "", "Finding you an agent.", true);
+  ping();
+
+  items = load();
+  items.forEach(render);
+  setInterval(poll, POLL_MS);
+  poll();
+  input.focus();
+
+
+})();

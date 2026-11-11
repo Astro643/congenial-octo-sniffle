@@ -1,9 +1,12 @@
 import type { LinksFunction, MetaFunction } from "@remix-run/node"
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "@remix-run/react"
-import siteStyles from "../site.css?url"
+import motionStyles from "./styles/motion.css?url"
+import { PageMotion } from "./components/page-motion"
+import { ParticleBackdrop } from "./components/particle-backdrop"
 
 export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: siteStyles },
+  { rel: "stylesheet", href: motionStyles },
+  { rel: "icon", href: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M2.5 5h19L12 20.5z' fill='%23000'/%3E%3C/svg%3E" },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
   { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;600;700&display=swap" },
@@ -17,9 +20,17 @@ export const meta: MetaFunction = () => [
 
 export default function App() {
   return <html lang="en">
-    <head><Meta /><Links /></head>
+    <head>
+      <meta charSet="utf-8" />
+      <meta name="viewport" content="width=device-width,initial-scale=1" />
+      <Meta />
+      <Links />
+    </head>
     <body>
-      <Outlet />
+      <ParticleBackdrop />
+      <PageMotion>
+        <Outlet />
+      </PageMotion>
       <ScrollRestoration />
       <Scripts />
     </body>

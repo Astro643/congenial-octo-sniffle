@@ -1,0 +1,17 @@
+.page-motion{position:relative;z-index:1}
+.particle-backdrop{inset:0;opacity:.8;pointer-events:none;position:fixed;z-index:0}
+.particle-backdrop canvas{pointer-events:auto}
+
+.motion-ready{opacity:0;transform:translateY(14px);animation:motion-drop .52s cubic-bezier(.22,1,.36,1) forwards;animation-delay:calc(var(--motion-index, 0) * 70ms + 120ms)}
+.sidebar.motion-ready,[data-sidebar].motion-ready{transform:translateX(-18px);animation-name:motion-slide-in}
+@keyframes motion-drop{to{opacity:1;transform:translateY(0)}}
+@keyframes motion-slide-in{to{opacity:1;transform:translateX(0)}}
+
+#feed>*{animation:motion-drop-top .5s cubic-bezier(.22,1,.36,1) both}
+@keyframes motion-drop-top{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:translateY(0)}}
+
+@media (prefers-reduced-motion:reduce){
+  .motion-ready{opacity:1;transform:none;animation:none}
+  #feed>*{animation:none}
+  .particle-backdrop{display:none}
+}
