@@ -10,6 +10,5 @@ export const routes = route({
   terms: "/terms",
   dashboard: "/dashboard",
   team: "/team",
-  humanSupport: "/human-support",
   notFound: get("/*path"),
 })

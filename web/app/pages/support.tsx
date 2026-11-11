@@ -4,7 +4,7 @@ export const meta: PageMeta = {
   title: "Support · Controller",
   description: "Get help, fix common problems and reach us.",
   styles: ["/site.css","/support-extras.css"],
-  scripts: ["/config.js","/widget.js","/site.js","/human-dot.js"],
+  scripts: ["/config.js","/widget.js","/site.js"],
 }
 
 export function SupportPage() {
@@ -91,24 +91,6 @@ export function SupportPage() {
                       {"walkthrough"}
                     </a>
                     {"."}
-                  </p>
-                </div>
-                <div className={"card"}>
-                  <div className={"bar"}></div>
-                  <h3>
-                    {"Human support "}
-                    <span className={"xp-tag"}>
-                      {"Experimental"}
-                    </span>
-                  </h3>
-                  <p>
-                    {"Want a real person? Start a chat and we’ll get back to you within 24 hours."}
-                  </p>
-                  <p style={{ marginTop: "16px" }}>
-                    <a className={"btn btn-sm"} href={"/human-support"}>
-                      {"Start a chat"}
-                      <span className={"hs-dot"} id={"hs-dot"} hidden></span>
-                    </a>
                   </p>
                 </div>
               </div>

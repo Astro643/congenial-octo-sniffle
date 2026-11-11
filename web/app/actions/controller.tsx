@@ -6,7 +6,6 @@ import { DashboardPage, meta as dashboardMeta } from "../pages/dashboard.tsx"
 import { FaqPage, meta as faqMeta } from "../pages/faq.tsx"
 import { HomePage, meta as homeMeta } from "../pages/home.tsx"
 import { HowItWorksPage, meta as howItWorksMeta } from "../pages/how-it-works.tsx"
-import { HumanSupportPage, meta as humanSupportMeta } from "../pages/human-support.tsx"
 import { PrivacyPage, meta as privacyMeta } from "../pages/privacy.tsx"
 import { SupportPage, meta as supportMeta } from "../pages/support.tsx"
 import { TeamPage, meta as teamMeta } from "../pages/team.tsx"
@@ -81,13 +80,6 @@ export default createController(routes, {
           <NotFoundPage />
         </Document>,
         { status: 404 },
-      )
-    },
-    humanSupport(context) {
-      return context.render(
-        <Document meta={humanSupportMeta}>
-          <HumanSupportPage />
-        </Document>,
       )
     },
   },
