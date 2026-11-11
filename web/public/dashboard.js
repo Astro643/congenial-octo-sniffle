@@ -126,119 +126,49 @@
     
     const m = el("div", "preview-modal", null);
     m.id = "preview-modal";
-    m.style.position = "fixed";
-    m.style.top = "0";
-    m.style.left = "0";
-    m.style.right = "0";
-    m.style.bottom = "0";
-    m.style.background = "rgba(0, 0, 0, 0.5)";
-    m.style.zIndex = "100";
-    m.style.display = "flex";
-    m.style.justifyContent = "center";
-    m.style.alignItems = "center";
-    m.style.padding = "20px";
     
     const card = el("div", "preview-card");
-    card.style.background = "var(--surface)";
-    card.style.border = "1px solid var(--border)";
-    card.style.borderRadius = "14px";
-    card.style.padding = "24px";
-    card.style.maxWidth = "500px";
-    card.style.width = "100%";
-    card.style.maxHeight = "80vh";
-    card.style.overflow = "auto";
     
-    const title = el("h2", null, "Preview (Dry Run)");
-    title.style.font = "var(--display)";
-    title.style.fontSize = "24px";
-    title.style.margin = "0 0 16px";
-    title.style.textTransform = "uppercase";
-    title.style.letterSpacing = "0.005em";
+    const title = el("h2", "preview-title", "Preview (Dry Run)");
     card.appendChild(title);
     
     if (previewData.incomplete || !previewData.complete) {
       const question = el("p", "preview-question", previewData.question || "Can you clarify your request?");
-      question.style.color = "var(--amber)";
-      question.style.margin = "16px 0";
-      question.style.fontWeight = "600";
       card.appendChild(question);
     }
     
     if (previewData.summary) {
       const summary = el("p", "preview-summary", previewData.summary);
-      summary.style.color = "var(--muted)";
-      summary.style.margin = "8px 0 16px";
-      summary.style.fontSize = "14px";
       card.appendChild(summary);
     }
     
-    const stepsTitle = el("h3", null, "Planned Steps:");
-    stepsTitle.style.fontSize = "16px";
-    stepsTitle.style.margin = "16px 0 8px";
-    stepsTitle.style.color = "var(--ink)";
+    const stepsTitle = el("h3", "preview-h", "Planned steps");
     card.appendChild(stepsTitle);
     
     const stepsList = el("div", "preview-steps");
-    stepsList.style.display = "flex";
-    stepsList.style.flexDirection = "column";
-    stepsList.style.gap = "8px";
     
     if (previewData.steps && previewData.steps.length > 0) {
       previewData.steps.forEach((step, idx) => {
         const stepEl = el("div", "preview-step");
-        stepEl.style.background = "var(--mono-bg)";
-        stepEl.style.borderRadius = "8px";
-        stepEl.style.padding = "10px 12px";
-        stepEl.style.fontSize = "14px";
-        stepEl.style.display = "flex";
-        stepEl.style.alignItems = "flex-start";
-        stepEl.style.gap = "10px";
         
         const stepNum = el("span", "preview-step-num", (idx + 1).toString());
-        stepNum.style.background = "var(--dark)";
-        stepNum.style.color = "var(--green)";
-        stepNum.style.borderRadius = "50%";
-        stepNum.style.width = "24px";
-        stepNum.style.height = "24px";
-        stepNum.style.display = "flex";
-        stepNum.style.alignItems = "center";
-        stepNum.style.justifyContent = "center";
-        stepNum.style.fontSize = "12px";
-        stepNum.style.fontWeight = "700";
-        stepNum.style.flexShrink = "0";
         
         const stepLabel = el("span", "preview-step-label", step.label || step.action);
-        stepLabel.style.color = "var(--ink)";
-        stepLabel.style.flex = "1";
         
         stepEl.appendChild(stepNum);
         stepEl.appendChild(stepLabel);
         stepsList.appendChild(stepEl);
       });
     } else {
-      const noSteps = el("p", null, "No steps generated.");
-      noSteps.style.color = "var(--muted)";
-      noSteps.style.fontStyle = "italic";
+      const noSteps = el("p", "preview-empty", "No steps generated.");
       stepsList.appendChild(noSteps);
     }
     card.appendChild(stepsList);
     
     const actions = el("div", "preview-actions");
-    actions.style.display = "flex";
-    actions.style.gap = "12px";
-    actions.style.marginTop = "20px";
-    actions.style.justifyContent = "flex-end";
     
     const cancelBtn = el("button", "preview-btn preview-cancel", "Cancel");
     cancelBtn.type = "button";
-    cancelBtn.style.padding = "10px 20px";
-    cancelBtn.style.borderRadius = "8px";
-    cancelBtn.style.border = "1px solid var(--border)";
-    cancelBtn.style.background = "transparent";
-    cancelBtn.style.color = "var(--ink)";
-    cancelBtn.style.cursor = "pointer";
-    cancelBtn.style.font = "var(--mono)";
-    cancelBtn.style.fontSize = "13px";
     cancelBtn.addEventListener("click", () => {
       clearTimeout(previewTimeout);
       m.remove();
@@ -247,15 +177,6 @@
     
     const confirmBtn = el("button", "preview-btn preview-confirm", previewData.incomplete ? "Answer Question" : "Execute");
     confirmBtn.type = "button";
-    confirmBtn.style.padding = "10px 20px";
-    confirmBtn.style.borderRadius = "8px";
-    confirmBtn.style.border = "0";
-    confirmBtn.style.background = "var(--green)";
-    confirmBtn.style.color = "#000";
-    confirmBtn.style.cursor = "pointer";
-    confirmBtn.style.font = "var(--mono)";
-    confirmBtn.style.fontSize = "13px";
-    confirmBtn.style.fontWeight = "600";
     confirmBtn.addEventListener("click", async () => {
       clearTimeout(previewTimeout);
       m.remove();

@@ -1,6 +1,6 @@
 /* Human support / team. The scene is drawn on the reference's own 538x303 grid (1 unit = --u) so it scales exactly with the width. */
-:root{--bg:#EBEAE5;--ink:#050505;--muted:#5F5E61;--scene:#1B1A1D;--panel:#121113;--panel2:#0E0D0F;--line:#2A282B;--wire:#76757A;
-  --ptext:#F2F1EC;--pmute:#8D8A90;--row:#262427;--green:#2EE6A0;--exp:#2F6BFF}
+:root{--bg:#EEEDE8;--ink:#050505;--muted:#5F5E61;--scene:#1B1A1D;--panel:#121113;--panel2:#0E0D0F;--line:#2A282B;--wire:#76757A;
+  --ptext:#F2F1EC;--pmute:#8D8A90;--row:#262427;--green:#2EFF9B;--exp:#2F6BFF}
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
@@ -90,3 +90,10 @@ a{color:#0A7A43}
   .scene .w,.node,.tile,.close{display:none}
   .slot{position:relative;left:auto;top:auto;width:100%;height:min(560px,75vh)}
 }
+
+/* ---- match the site: grid + selection colour ---- */
+body{position:relative}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(90deg,rgba(5,5,5,.07) 1px,transparent 1px) calc(50% - 135px) 0/270px 100%,
+             linear-gradient(rgba(5,5,5,.045) 1px,transparent 1px) 0 0/100% 270px}
+::selection{background:rgba(46,255,155,.45)}

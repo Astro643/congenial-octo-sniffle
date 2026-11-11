@@ -14,7 +14,7 @@
 html,body{margin:0}
 html{scroll-behavior:smooth}
 body{background:var(--canvas) var(--noise);color:var(--ink);font:16px/1.65 var(--sans);-webkit-font-smoothing:antialiased;
-  letter-spacing:-.005em;min-height:100vh;display:flex;flex-direction:column;overflow-x:clip}
+  font-feature-settings:"cv11","ss01";letter-spacing:-.005em;min-height:100vh;display:flex;flex-direction:column;overflow-x:clip}
 body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
   background:linear-gradient(90deg,rgba(5,5,5,.07) 1px,transparent 1px) calc(50% - 135px) 0/270px 100%,
               linear-gradient(rgba(5,5,5,.045) 1px,transparent 1px) 0 0/100% 270px}
@@ -306,7 +306,28 @@ footer .brand .logo{background:var(--green);color:#000;padding:5px;border-radius
 @media (prefers-reduced-motion:reduce){.motion-ready{opacity:1;transform:none;animation:none}}
 
 .legacy-page-shell{isolation:isolate;min-height:100vh;position:relative}
-.particle-backdrop{inset:0;opacity:.72;pointer-events:none;position:fixed;z-index:-1}
-.particle-backdrop canvas{pointer-events:auto}
 .legacy-page-content{position:relative;z-index:1}
-@media (prefers-reduced-motion:reduce){.particle-backdrop{display:none}}
+
+/* ---- Polish pass ---- */
+.nav{border-bottom:1px solid rgba(5,5,5,.06)}
+h1,h2{text-wrap:balance}
+.lead,.head p,.card p,.step p{text-wrap:pretty}
+.card{transition:border-color .2s ease,transform .2s ease}
+.step{transition:border-color .2s ease}
+.card:hover,.step:hover{border-left-color:var(--green-deep)}
+.card:hover{transform:translateY(-2px)}
+.card .bar{transition:box-shadow .2s ease}
+.card:hover .bar{box-shadow:0 8px 18px -8px rgba(46,255,155,.75)}
+.demo{transition:transform .25s ease,box-shadow .25s ease}
+.demo:hover{transform:translateY(-3px)}
+details{transition:box-shadow .2s ease,border-color .2s ease}
+details:hover{border-color:#BDBCB7}
+.btn-primary,.btn-secondary,.sw-btn{transition:background .15s,transform .08s,box-shadow .15s}
+@media (max-width:760px){
+  /* keep the page links reachable on phones: second row under the logo */
+  .nav-in{flex-wrap:wrap;height:auto;padding:12px 0 10px;row-gap:10px}
+  .nav nav{display:flex;order:3;width:100%;overflow-x:auto;justify-content:center;scrollbar-width:none}
+  .nav nav::-webkit-scrollbar{display:none}
+  .nav nav a{padding:10px 14px;white-space:nowrap}
+}
+@media (prefers-reduced-motion:reduce){.card:hover,.demo:hover{transform:none}}
