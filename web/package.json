@@ -3,28 +3,22 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "remix vite:dev",
-    "build": "remix vite:build",
-    "start": "remix-serve ./build/server/*/index.js"
+    "dev": "NODE_ENV=development node --watch --import remix/node-tsx server.ts",
+    "start": "NODE_ENV=production node --import remix/node-tsx server.ts",
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=24.3.0"
   },
   "dependencies": {
-    "@remix-run/node": "2.16.7",
-    "@remix-run/react": "2.16.7",
-    "@remix-run/serve": "2.16.7",
-    "@tsparticles/react": "^4.5.3",
+    "@tsparticles/engine": "^4.5.3",
     "@tsparticles/slim": "^4.5.3",
     "framer-motion": "^14.12.0",
-    "isbot": "^5.1.17",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "remix": "^3.2.0"
   },
   "devDependencies": {
-    "@remix-run/dev": "2.16.7",
-    "@vercel/remix": "2.16.7-patch.1",
-    "@types/node": "^22.15.0",
-    "@types/react": "^19.1.2",
-    "@types/react-dom": "^19.1.2",
-    "typescript": "^5.8.3",
-    "vite": "^6.3.5"
+    "@types/node": "^24.0.0",
+    "typescript": "^5.8.3"
   }
 }
