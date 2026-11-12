@@ -18,17 +18,6 @@ export function TermsPage() {
               </svg>
               {"Controller"}
             </a>
-            <nav aria-label={"Main"}>
-              <a href={"/how-it-works"} className={""}>
-                {"How it works"}
-              </a>
-              <a href={"/faq"} className={""}>
-                {"FAQ"}
-              </a>
-              <a href={"/support"} className={""}>
-                {"Support"}
-              </a>
-            </nav>
             <div className={"nav-right"}>
               <a className={"btn btn-primary btn-sm"} href={"/dashboard"}>
                 {"Open Console"}
@@ -119,7 +108,7 @@ export function TermsPage() {
                 {"AI support"}
               </h2>
               <p>
-                {"Support in the chat widget is answered by an AI assistant (with a backup assistant if it is down), not by people. If both are unavailable, support is temporarily down. Its answers can be incomplete or wrong, so check anything important against the FAQ and the how-it-works page. The assistant cannot see or change your server."}
+                {"Support in the chat widget is answered by an AI assistant (with a backup assistant if it is down), not by people. If both are unavailable, support is temporarily down. Its answers can be incomplete or wrong, so verify anything important yourself. The assistant cannot see or change your server."}
               </p>
               <h2>
                 {"Availability"}
@@ -194,12 +183,6 @@ export function TermsPage() {
                 <h4>
                   {"Product"}
                 </h4>
-                <a href={"/how-it-works"}>
-                  {"How it works"}
-                </a>
-                <a href={"/faq"}>
-                  {"FAQ"}
-                </a>
                 <a href={"/dashboard"}>
                   {"Console"}
                 </a>
@@ -211,9 +194,6 @@ export function TermsPage() {
                 <h4>
                   {"Help"}
                 </h4>
-                <a href={"/support"}>
-                  {"Support"}
-                </a>
                 <a href={"#"} rel={"noopener"} data-support-url={""} hidden>
                   {"Discord server"}
                 </a>

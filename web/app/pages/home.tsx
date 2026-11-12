@@ -18,17 +18,6 @@ export function HomePage() {
               </svg>
               {"Controller"}
             </a>
-            <nav aria-label={"Main"}>
-              <a href={"/how-it-works"} className={""}>
-                {"How it works"}
-              </a>
-              <a href={"/faq"} className={""}>
-                {"FAQ"}
-              </a>
-              <a href={"/support"} className={""}>
-                {"Support"}
-              </a>
-            </nav>
             <div className={"nav-right"}>
               <a className={"btn btn-primary btn-sm"} href={"/dashboard"}>
                 {"Open Console"}
@@ -86,9 +75,6 @@ export function HomePage() {
               <div className={"cta"}>
                 <a className={"btn btn-primary"} href={"/dashboard"} data-invite={""}>
                   {"Open Console"}
-                </a>
-                <a className={"btn"} href={"/how-it-works"}>
-                  {"See how it works"}
                 </a>
               </div>
               <div className={"demo"} aria-label={"Example request"}>
@@ -273,11 +259,6 @@ export function HomePage() {
                   </p>
                 </div>
               </div>
-              <p style={{ marginTop: "22px" }}>
-                <a href={"/how-it-works"} style={{ color: "var(--green-ink)", fontWeight: "600", textDecoration: "none" }}>
-                  {"Read the full walkthrough →"}
-                </a>
-              </p>
             </section>
             <section className={"block"}>
               <div className={"grid"} style={{ alignItems: "center", gap: "40px", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))" }}>
@@ -364,9 +345,6 @@ export function HomePage() {
                 <a className={"btn btn-primary"} href={"/dashboard"} data-invite={""}>
                   {"Open Console"}
                 </a>
-                <a className={"btn"} href={"/faq"}>
-                  {"Read the FAQ"}
-                </a>
               </div>
             </section>
           </div>
@@ -389,12 +367,6 @@ export function HomePage() {
                 <h4>
                   {"Product"}
                 </h4>
-                <a href={"/how-it-works"}>
-                  {"How it works"}
-                </a>
-                <a href={"/faq"}>
-                  {"FAQ"}
-                </a>
                 <a href={"/dashboard"}>
                   {"Console"}
                 </a>
@@ -406,9 +378,6 @@ export function HomePage() {
                 <h4>
                   {"Help"}
                 </h4>
-                <a href={"/support"}>
-                  {"Support"}
-                </a>
                 <a href={"#"} rel={"noopener"} data-support-url={""} hidden>
                   {"Discord server"}
                 </a>

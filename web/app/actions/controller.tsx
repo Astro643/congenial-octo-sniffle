@@ -3,11 +3,8 @@ import { createController } from "remix/router"
 import { assets } from "../assets.ts"
 import { routes } from "../routes.ts"
 import { DashboardPage, meta as dashboardMeta } from "../pages/dashboard.tsx"
-import { FaqPage, meta as faqMeta } from "../pages/faq.tsx"
 import { HomePage, meta as homeMeta } from "../pages/home.tsx"
-import { HowItWorksPage, meta as howItWorksMeta } from "../pages/how-it-works.tsx"
 import { PrivacyPage, meta as privacyMeta } from "../pages/privacy.tsx"
-import { SupportPage, meta as supportMeta } from "../pages/support.tsx"
 import { TermsPage, meta as termsMeta } from "../pages/terms.tsx"
 import { NotFoundPage, meta as notFoundMeta } from "../pages/not-found.tsx"
 import { Document } from "./document.tsx"
@@ -21,27 +18,6 @@ export default createController(routes, {
       return context.render(
         <Document meta={homeMeta}>
           <HomePage />
-        </Document>,
-      )
-    },
-    howItWorks(context) {
-      return context.render(
-        <Document meta={howItWorksMeta}>
-          <HowItWorksPage />
-        </Document>,
-      )
-    },
-    faq(context) {
-      return context.render(
-        <Document meta={faqMeta}>
-          <FaqPage />
-        </Document>,
-      )
-    },
-    support(context) {
-      return context.render(
-        <Document meta={supportMeta}>
-          <SupportPage />
         </Document>,
       )
     },

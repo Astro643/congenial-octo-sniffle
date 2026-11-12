@@ -18,17 +18,6 @@ export function NotFoundPage() {
               </svg>
               {"Controller"}
             </a>
-            <nav aria-label={"Main"}>
-              <a href={"/how-it-works"} className={""}>
-                {"How it works"}
-              </a>
-              <a href={"/faq"} className={""}>
-                {"FAQ"}
-              </a>
-              <a href={"/support"} className={""}>
-                {"Support"}
-              </a>
-            </nav>
             <div className={"nav-right"}>
               <a className={"btn btn-primary btn-sm"} href={"/dashboard"}>
                 {"Open Console"}
@@ -74,12 +63,6 @@ export function NotFoundPage() {
                 <h4>
                   {"Product"}
                 </h4>
-                <a href={"/how-it-works"}>
-                  {"How it works"}
-                </a>
-                <a href={"/faq"}>
-                  {"FAQ"}
-                </a>
                 <a href={"/dashboard"}>
                   {"Console"}
                 </a>
@@ -91,9 +74,6 @@ export function NotFoundPage() {
                 <h4>
                   {"Help"}
                 </h4>
-                <a href={"/support"}>
-                  {"Support"}
-                </a>
                 <a href={"#"} rel={"noopener"} data-support-url={""} hidden>
                   {"Discord server"}
                 </a>
