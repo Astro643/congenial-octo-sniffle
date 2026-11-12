@@ -6,8 +6,18 @@ import controller from "./actions/controller.tsx"
 import { assets } from "./assets.ts"
 import { routes } from "./routes.ts"
 
+const backend = process.env.BACKEND_URL ?? "https://silver-funicular-nu.vercel.app"
+
 export const router = createRouter({
-  middleware: [staticFiles("./public", { index: false }), render({ assets })],
+  middleware: [
+    async (context, next) => {
+      const url = new URL(context.request.url)
+      if (!url.pathname.startsWith("/api/")) return next()
+      return fetch(new Request(backend + url.pathname + url.search, context.request))
+    },
+    staticFiles("./public", { index: false }),
+    render({ assets }),
+  ],
 })
 
 export type AppContext = RouterContext<typeof router>
