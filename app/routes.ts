@@ -6,5 +6,6 @@ export const routes = route({
   privacy: "/privacy",
   terms: "/terms",
   dashboard: "/dashboard",
+  docs: "/docs",
   notFound: get("/*path"),
 })

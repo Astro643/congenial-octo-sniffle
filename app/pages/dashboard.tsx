@@ -22,20 +22,6 @@ export function DashboardPage() {
         <main>
           <section id={"feed"} aria-live={"polite"}></section>
         </main>
-        <div id={"gate"} role={"status"} aria-live={"polite"}>
-          <div className={"gate-card"}>
-            <h1 id={"gate-title"}>
-              {"You are in line"}
-            </h1>
-            <div className={"gate-num"} id={"gate-num"}></div>
-            <p id={"gate-text"}>
-              {"Every agent is helping someone else. You will be let in as soon as one is free."}
-            </p>
-            <div className={"gate-bar"} id={"gate-bar"}>
-              <i></i>
-            </div>
-          </div>
-        </div>
         <div id={"bar"}>
           <form id={"form"} autoComplete={"off"}>
             <input id={"prompt"} type={"text"} maxLength={2000} placeholder={"Describe a change to your server"} aria-label={"Goal"} />

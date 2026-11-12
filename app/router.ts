@@ -6,7 +6,7 @@ import controller from "./actions/controller.tsx"
 import { assets } from "./assets.ts"
 import { routes } from "./routes.ts"
 
-const backend = process.env.BACKEND_URL ?? "https://silver-funicular-nu.vercel.app"
+const backend = process.env.BACKEND_URL ?? "https://didactic-doodle-iota.vercel.app"
 
 export const router = createRouter({
   middleware: [

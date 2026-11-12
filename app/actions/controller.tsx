@@ -3,6 +3,7 @@ import { createController } from "remix/router"
 import { assets } from "../assets.ts"
 import { routes } from "../routes.ts"
 import { DashboardPage, meta as dashboardMeta } from "../pages/dashboard.tsx"
+import { DocsPage, meta as docsMeta } from "../pages/docs.tsx"
 import { HomePage, meta as homeMeta } from "../pages/home.tsx"
 import { PrivacyPage, meta as privacyMeta } from "../pages/privacy.tsx"
 import { TermsPage, meta as termsMeta } from "../pages/terms.tsx"
@@ -39,6 +40,13 @@ export default createController(routes, {
       return context.render(
         <Document meta={dashboardMeta}>
           <DashboardPage />
+        </Document>,
+      )
+    },
+    docs(context) {
+      return context.render(
+        <Document meta={docsMeta}>
+          <DocsPage />
         </Document>,
       )
     },

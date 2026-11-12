@@ -370,6 +370,9 @@ export function HomePage() {
                 <a href={"/dashboard"}>
                   {"Console"}
                 </a>
+                <a href={"/docs"}>
+                  {"Docs"}
+                </a>
                 <a href={"#"} rel={"noopener"} data-invite-only={""} hidden>
                   {"Add to Discord"}
                 </a>

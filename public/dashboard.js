@@ -80,7 +80,6 @@
         const note = data.error || data.result || "";
         if (data.status !== item.status || note !== item.note) {
           item.status = data.status; item.note = note; render(item);
-          if (FINAL_STATES.has(data.status)) ping();
         }
       } catch {}
     }));
@@ -121,6 +120,7 @@
   let currentPreviewPrompt = "";
   
   function createPreviewModal(previewData) {
+    const plan = previewData.complete && !previewData.incomplete ? {summary: previewData.summary, steps: previewData.steps} : null;
     const modal = document.getElementById("preview-modal");
     if (modal) modal.remove();
     
@@ -183,10 +183,10 @@
       
       if (previewData.incomplete || !previewData.complete) {
         // Ask the question
-        executeWithPrompt(currentPreviewPrompt);
+        executeWithPrompt(currentPreviewPrompt, plan);
       } else {
         // Auto-execute after preview
-        executeWithPrompt(currentPreviewPrompt);
+        executeWithPrompt(currentPreviewPrompt, plan);
       }
     });
     
@@ -202,7 +202,7 @@
       previewTimeout = setTimeout(() => {
         if (m.parentNode) {
           m.remove();
-          executeWithPrompt(currentPreviewPrompt);
+          executeWithPrompt(currentPreviewPrompt, plan);
         }
       }, 9000);
     }
@@ -215,19 +215,18 @@
     createPreviewModal(previewData);
   }
   
-  function executeWithPrompt(prompt) {
+  function executeWithPrompt(prompt, plan) {
     btn.disabled = true; setHint("");
-    fetch("/api/execute", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({prompt})})
+    fetch("/api/execute", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(plan ? {prompt, plan} : {prompt})})
       .then(r => r.json().catch(() => ({})))
       .then(data => {
         if (!r.ok) {
-          if (r.status === 409) ping();
           const msg = typeof data.detail === "string" ? data.detail : "Could not queue that goal.";
-          setHint(r.status === 401 ? "Session expired. Open a fresh link from your bot." : msg, true);
+          setHint(msg, true);
           return;
         }
         const item = {id: data.command_id, prompt, ts: Date.now(), status: data.status || "processing", note: ""};
-        items.push(item); save(); render(item); setTimeout(ping, 4000);
+        items.push(item); save(); render(item);
         input.value = ""; syncReady();
       })
       .catch(() => {
@@ -238,49 +237,10 @@
       });
   }
 
-  const gate = document.getElementById("gate"), gateTitle = document.getElementById("gate-title"), gateNum = document.getElementById("gate-num"), gateText = document.getElementById("gate-text");
-  const gateBar = document.getElementById("gate-bar");
   const chip = document.getElementById("agent-chip");
-  let active = false, pingTimer = null;
-  function setActive(on, agent) {
-    active = on;
-    gate.classList.toggle("show", !on);
-    chip.classList.toggle("show", on && !!agent);
-    if (on && agent) chip.textContent = "Agent " + agent;
-    input.disabled = !on; btn.disabled = !on;
-    if (on) setTimeout(() => input.focus(), 50);
-  }
-  function showGate(title, num, text, bar) {
-    gateTitle.textContent = title; gateNum.textContent = num || ""; gateText.textContent = text;
-    gateBar.style.display = bar ? "" : "none";
-  }
-
-  async function ping() {
-    clearTimeout(pingTimer);
-    let delay = 5000;
-    try {
-      const r = await fetch("/api/session/ping", {method: "POST", cache: "no-store"});
-      if (r.status === 401) { showGate("Session expired", "", "Open a fresh link from your bot to continue.", false); setActive(false); return; }
-      if (!r.ok) throw new Error("ping");
-      const d = await r.json();
-      if (d.state === "active") { setActive(true, d.agent); delay = 30000; }
-      else if (d.state === "waiting") {
-        setActive(false);
-        showGate("You are in line", "#" + d.position,
-          d.ahead === 0 ? "You are next. An agent frees up when someone closes their console."
-                        : d.ahead + (d.ahead === 1 ? " person is" : " people are") + " ahead of you. Keep this tab open to hold your place.", true);
-      } else if (d.state === "idle_released") {
-        setActive(false); showGate("Agent released", "", "You were idle while others were waiting. Rejoining the line…", true); delay = 1500;
-      } else if (d.state === "full") { setActive(false); showGate("Line is full", "", "Too many people are waiting right now. Please try again in a few minutes.", false); delay = 30000; }
-      else { setActive(false); showGate("Unavailable", "", "No agent is set up right now. Please try again later.", false); delay = 30000; }
-    } catch { delay = 6000; }
-    pingTimer = setTimeout(ping, delay);
-  }
-
-  window.addEventListener("pagehide", () => { try { navigator.sendBeacon("/api/session/leave"); } catch {} });
-  setActive(false);
-  showGate("Checking…", "", "Finding you an agent.", true);
-  ping();
+  const active = true;
+  chip.textContent = "Agent ready";
+  chip.classList.add("show");
 
   items = load();
   items.forEach(render);
