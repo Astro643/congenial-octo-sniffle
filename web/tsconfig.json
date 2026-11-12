@@ -1,15 +1,8 @@
 {
   "compilerOptions": {
     "strict": true,
-    "lib": [
-      "ES2024",
-      "DOM",
-      "DOM.Iterable"
-    ],
-    "types": [
-      "node",
-      "remix/assets/types/hmr"
-    ],
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "types": ["node", "remix/assets/types/hmr"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "target": "ESNext",
@@ -22,13 +15,6 @@
     "jsxImportSource": "remix/component",
     "noEmit": true
   },
-  "include": [
-    "app",
-    "api",
-    "server.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "build"
-  ]
+  "include": ["app", "api", "server.ts"],
+  "exclude": ["node_modules", "build"]
 }
