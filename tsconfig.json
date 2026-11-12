@@ -15,6 +15,6 @@
     "jsxImportSource": "remix/component",
     "noEmit": true
   },
-  "include": ["app", "api", "server.ts"],
+  "include": ["app", "server.ts"],
   "exclude": ["node_modules", "build"]
 }

@@ -1,3 +1,4 @@
-import { router } from "../app/router.ts"
-
-export default (request: Request) => router.fetch(request)
+export default async (request: Request) => {
+  const mod = await import("../dist/src/site.js")
+  return mod.default(request)
+}
