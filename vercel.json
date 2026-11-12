@@ -1,7 +1,7 @@
 {
   "functions": {
     "api/site.ts": {
-      "includeFiles": "{app/**,node_modules/remix/**,node_modules/framer-motion/**,node_modules/@tsparticles/**}"
+      "includeFiles": "{app/**,public/**,node_modules/remix/**,node_modules/framer-motion/**,node_modules/@tsparticles/**}"
     }
   },
   "rewrites": [
