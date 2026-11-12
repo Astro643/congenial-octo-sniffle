@@ -15,6 +15,13 @@ export const router = createRouter({
       if (!url.pathname.startsWith("/api/")) return next()
       return fetch(new Request(backend + url.pathname + url.search, context.request))
     },
+    async (context, next) => {
+      const res = await next()
+      if (!new URL(context.request.url).pathname.startsWith("/api/")) {
+        res.headers.set("cache-control", "no-cache")
+      }
+      return res
+    },
     staticFiles("./public", { index: false }),
     render({ assets }),
   ],
