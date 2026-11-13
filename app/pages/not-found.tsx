@@ -13,7 +13,7 @@ export function NotFoundPage() {
         <header className={"nav"}>
           <div className={"wrap nav-in"}>
             <a className={"brand"} href={"/"}>
-              <svg className={"logo"} viewBox={"0 0 24 24"} aria-hidden={"true"}>
+              <svg className={"logo"} viewBox={"0 0 24 24"} width={"24"} height={"24"} aria-hidden={"true"}>
                 <path d={"M2.5 5h19L12 20.5z"} fill={"currentColor"}></path>
               </svg>
               {"Controller"}
@@ -50,7 +50,7 @@ export function NotFoundPage() {
             <div className={"foot"}>
               <div>
                 <a className={"brand"} href={"/"} style={{ padding: "0" }}>
-                  <svg className={"logo"} viewBox={"0 0 24 24"} aria-hidden={"true"}>
+                  <svg className={"logo"} viewBox={"0 0 24 24"} width={"24"} height={"24"} aria-hidden={"true"}>
                     <path d={"M2.5 5h19L12 20.5z"} fill={"currentColor"}></path>
                   </svg>
                   {"Controller"}
@@ -123,7 +123,7 @@ export function NotFoundPage() {
             <section className={"sw-view on"} id={"sw-home"}>
               <div className={"sw-hero"}>
                 <div className={"sw-brand"}>
-                  <svg className={"logo"} viewBox={"0 0 24 24"} aria-hidden={"true"}>
+                  <svg className={"logo"} viewBox={"0 0 24 24"} width={"24"} height={"24"} aria-hidden={"true"}>
                     <path d={"M2.5 5h19L12 20.5z"} fill={"currentColor"}></path>
                   </svg>
                   {"Controller"}

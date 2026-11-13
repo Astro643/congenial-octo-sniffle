@@ -9,8 +9,8 @@ export const meta: PageMeta = {
 export function DashboardPage() {
   return () => (
       <>
-        <a className={"mark"} href={"/"} aria-label={"Home"}>
-          <svg className={"logo"} viewBox={"0 0 24 24"} aria-hidden={"true"}>
+        <a className={"mark"} href={"/"} aria-label={"Home"} style={{ color: "#000" }}>
+          <svg className={"logo"} viewBox={"0 0 24 24"} width={"24"} height={"24"} aria-hidden={"true"}>
             <path d={"M2.5 5h19L12 20.5z"} fill={"currentColor"}></path>
           </svg>
         </a>
