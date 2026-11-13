@@ -1,4 +1,4 @@
-import { clientEntry, on } from "remix/component"
+import { clientEntry, on, ref } from "remix/component"
 import type { Handle } from "remix/component"
 
 const LABELS: Record<string, string> = {
@@ -76,6 +76,9 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
   let preview: PreviewData | undefined
   let previewPrompt = ""
   let previewTimer: ReturnType<typeof setTimeout> | undefined
+  let inputNode: HTMLInputElement | undefined
+
+  const focusInput = () => inputNode?.focus()
 
   const setHint = (msg: string, isErr = false) => {
     hint = msg || ""
@@ -88,10 +91,14 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
     previewTimer = undefined
     busy = false
     handle.update()
-    setTimeout(() => document.getElementById("prompt")?.focus(), 0)
+    focusInput()
   }
 
-  const execute = async (prompt: string, plan: { summary?: string; steps?: PreviewData["steps"] } | null, signal: AbortSignal) => {
+  const execute = async (
+    prompt: string,
+    plan: { summary?: string; steps?: PreviewData["steps"] } | null,
+    signal?: AbortSignal,
+  ) => {
     busy = true
     setHint("")
     handle.update()
@@ -100,10 +107,10 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(plan ? { prompt, plan } : { prompt }),
-        signal: signal.aborted ? undefined : to(API_TIMEOUT),
+        signal: to(API_TIMEOUT),
       })
       const data = await r.json().catch(() => ({}) as Record<string, unknown>)
-      if (signal.aborted) return
+      if (signal?.aborted) return
       if (!r.ok) {
         setHint(typeof data.detail === "string" ? data.detail : "Could not queue that goal.", true)
         return
@@ -125,12 +132,12 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
       handle.update()
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })
     } catch {
-      if (!signal.aborted) setHint("Network error. Please try again.", true)
+      if (!signal?.aborted) setHint("Network error. Please try again.", true)
     } finally {
-      if (!signal.aborted) {
+      if (!signal?.aborted) {
         busy = false
         handle.update()
-        setTimeout(() => document.getElementById("prompt")?.focus(), 0)
+        focusInput()
       }
     }
   }
@@ -167,7 +174,7 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
           if (preview) {
             preview = undefined
             previewTimer = undefined
-            execute(previewPrompt, plan, new AbortController().signal)
+            execute(previewPrompt, plan)
           }
         }, 9000)
       }
@@ -177,7 +184,7 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
       if (!signal.aborted && !preview) {
         busy = false
         handle.update()
-        setTimeout(() => document.getElementById("prompt")?.focus(), 0)
+        focusInput()
       }
     }
   }
@@ -196,10 +203,10 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
       busy = false
       setHint(data.question || "Add more detail and run it again.", false)
       handle.update()
-      setTimeout(() => document.getElementById("prompt")?.focus(), 0)
+      focusInput()
     } else {
       handle.update()
-      execute(prompt, plan, new AbortController().signal)
+      execute(prompt, plan)
     }
   }
 
@@ -283,8 +290,9 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
       },
       { signal: handle.signal },
     )
+    handle.signal.addEventListener("abort", () => clearTimeout(previewTimer))
 
-    document.getElementById("prompt")?.focus()
+    focusInput()
   })
 
   const feed = () => (
@@ -396,10 +404,15 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
             placeholder="Describe a change to your server"
             aria-label="Goal"
             value={draft}
-            mix={on("input", (event) => {
-              draft = event.currentTarget.value
-              handle.update()
-            })}
+            mix={[
+              on("input", (event) => {
+                draft = event.currentTarget.value
+                handle.update()
+              }),
+              ref((node) => {
+                inputNode = node
+              }),
+            ]}
           />
           <button
             id="go"

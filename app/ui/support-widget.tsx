@@ -1,4 +1,4 @@
-import { clientEntry, on } from "remix/component"
+import { clientEntry, on, ref } from "remix/component"
 import type { Handle } from "remix/component"
 
 const STORE_KEY = "support_chat_v1"
@@ -65,6 +65,11 @@ export const SupportWidget = clientEntry(
     let statusFetchedAt = 0
     let messages: ChatMessage[] = []
     let draft = ""
+    let inputNode: HTMLInputElement | undefined
+    let launcherNode: HTMLButtonElement | undefined
+    let threadNode: HTMLElement | undefined
+
+    const focusInput = (delay = 0) => setTimeout(() => inputNode?.focus(), delay)
 
     const setMessages = (next: ChatMessage[]) => {
       messages = next
@@ -84,8 +89,7 @@ export const SupportWidget = clientEntry(
 
     const scrollThread = () =>
       setTimeout(() => {
-        const t = document.getElementById("sw-thread")
-        if (t) t.scrollTop = t.scrollHeight
+        if (threadNode) threadNode.scrollTop = threadNode.scrollHeight
       }, 0)
 
     const setTab = (t: "home" | "messages") => {
@@ -93,7 +97,7 @@ export const SupportWidget = clientEntry(
       handle.update()
       if (t === "messages") {
         scrollThread()
-        setTimeout(() => document.getElementById("sw-input")?.focus(), 60)
+        focusInput(60)
       }
     }
 
@@ -102,7 +106,7 @@ export const SupportWidget = clientEntry(
       handle.update()
       if (v) {
         if (Date.now() - statusFetchedAt > 15000) fetchStatus()
-        if (tab === "messages") setTimeout(() => document.getElementById("sw-input")?.focus(), 120)
+        if (tab === "messages") focusInput(120)
       }
     }
 
@@ -154,7 +158,7 @@ export const SupportWidget = clientEntry(
       saveMessages(messages)
       handle.update()
       scrollThread()
-      setTimeout(() => document.getElementById("sw-input")?.focus(), 0)
+      focusInput()
     }
 
     handle.queueTask(() => {
@@ -173,7 +177,7 @@ export const SupportWidget = clientEntry(
         (e) => {
           if (e.key === "Escape" && open) {
             setOpen(false)
-            document.getElementById("sw-launch")?.focus()
+            launcherNode?.focus()
           }
         },
         { signal: handle.signal },
@@ -282,7 +286,12 @@ export const SupportWidget = clientEntry(
           aria-label={open ? "Close support" : "Open support and system status"}
           aria-expanded={open}
           aria-controls="sw-panel"
-          mix={on("click", () => setOpen(!open))}
+          mix={[
+            on("click", () => setOpen(!open)),
+            ref((node) => {
+              launcherNode = node
+            }),
+          ]}
         >
           <svg class="ico-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-7l-4 3.5V16H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" />
@@ -348,7 +357,7 @@ export const SupportWidget = clientEntry(
                       messages = []
                       saveMessages(messages)
                       handle.update()
-                      setTimeout(() => document.getElementById("sw-input")?.focus(), 0)
+                      focusInput()
                     }
                   })}
                 >
@@ -363,7 +372,14 @@ export const SupportWidget = clientEntry(
                 </button>
               </div>
             </div>
-            <div class="sw-thread" id="sw-thread" aria-live="polite">
+            <div
+              class="sw-thread"
+              id="sw-thread"
+              aria-live="polite"
+              mix={ref((node) => {
+                threadNode = node
+              })}
+            >
               {thread()}
             </div>
             <div class="sw-note">
@@ -387,10 +403,15 @@ export const SupportWidget = clientEntry(
                 placeholder="Ask a question"
                 aria-label="Your question"
                 value={draft}
-                mix={on("input", (event) => {
-                  draft = event.currentTarget.value
-                  handle.update()
-                })}
+                mix={[
+                  on("input", (event) => {
+                    draft = event.currentTarget.value
+                    handle.update()
+                  }),
+                  ref((node) => {
+                    inputNode = node
+                  }),
+                ]}
               />
               <button class="sw-send" id="sw-send" type="submit" aria-label="Send" disabled={busy}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
