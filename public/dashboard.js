@@ -13,6 +13,7 @@
   };
   const FINAL_STATES = new Set(["cancelled", "completed", "blocked_by_traffic", "failed", "rejected", "unknown", "stalled"]);
   const POLL_MS = 1500, GIVE_UP_MS = 26 * 60 * 60 * 1000, STORE_KEY = "console_history_v1", MAX_ITEMS = 50, API_TIMEOUT = 45000;
+  const to = (ms) => { try { return AbortSignal.timeout(ms); } catch { return undefined; } };
 
   const feed = document.getElementById("feed");
   const form = document.getElementById("form");
@@ -35,7 +36,7 @@
   }
 
   function render(item) {
-    let node = feed.querySelector(`[data-id="${item.id}"]`);
+    let node = feed.querySelector(`[data-id="${CSS.escape(item.id)}"]`);
     const fresh = !node;
     if (fresh) { node = el("article", "op"); node.dataset.id = item.id; feed.appendChild(node); }
     node.replaceChildren();
@@ -54,7 +55,7 @@
       cancel.addEventListener("click", async () => {
         cancel.disabled = true;
         try {
-          const r = await fetch("/api/cancel/" + encodeURIComponent(item.id), {method: "POST", signal: AbortSignal.timeout(15000)});
+          const r = await fetch("/api/cancel/" + encodeURIComponent(item.id), {method: "POST", signal: to(15000)});
           const d = await r.json().catch(() => ({}));
           if (r.ok) { item.status = "cancelled"; item.note = ""; render(item); save(); }
           else { setHint(typeof d.detail === "string" ? d.detail : "Could not cancel.", true); cancel.disabled = false; }
@@ -73,7 +74,7 @@
     await Promise.all(pending.map(async item => {
       if (Date.now() - item.ts > GIVE_UP_MS) { item.status = "stalled"; render(item); return; }
       try {
-        const r = await fetch("/api/status/" + encodeURIComponent(item.id), {cache: "no-store", signal: AbortSignal.timeout(15000)});
+        const r = await fetch("/api/status/" + encodeURIComponent(item.id), {cache: "no-store", signal: to(15000)});
         if (r.status === 401) { setHint("Session expired. Open a fresh link from your bot.", true); return; }
         if (!r.ok) return;
         const data = await r.json();
@@ -92,13 +93,14 @@
 
   form.addEventListener("submit", async e => {
     e.preventDefault();
+    form.dataset.ready = "1";
     const prompt = input.value.trim();
     if (!prompt) return;
     btn.disabled = true; setHint("");
     
     // First, generate preview (dry run)
     try {
-      const previewR = await fetch("/api/preview", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({prompt}), signal: AbortSignal.timeout(API_TIMEOUT)});
+      const previewR = await fetch("/api/preview", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({prompt}), signal: to(API_TIMEOUT)});
       const previewData = await previewR.json().catch(() => ({}));
       
       if (!previewR.ok) {
@@ -119,6 +121,19 @@
   // Preview modal functionality
   let previewTimeout = null;
   let currentPreviewPrompt = "";
+  
+  function closePreview() {
+    clearTimeout(previewTimeout);
+    document.getElementById("preview-modal")?.remove();
+    btn.disabled = false;
+    input.focus();
+  }
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && document.getElementById("preview-modal")) { e.stopPropagation(); closePreview(); }
+  });
+  document.addEventListener("click", e => {
+    if (e.target instanceof Element && e.target.id === "preview-modal") closePreview();
+  }, true);
   
   function createPreviewModal(previewData) {
     const plan = previewData.complete && !previewData.incomplete ? {summary: previewData.summary, steps: previewData.steps} : null;
@@ -171,15 +186,13 @@
     
     const cancelBtn = el("button", "preview-btn preview-cancel", "Cancel");
     cancelBtn.type = "button";
-    cancelBtn.addEventListener("click", () => {
-      clearTimeout(previewTimeout);
-      m.remove();
-      btn.disabled = !active; if (active) input.focus();
-    });
+    cancelBtn.addEventListener("click", () => closePreview());
     
     const confirmBtn = el("button", "preview-btn preview-confirm", needsAnswer ? "Edit request" : "Execute");
     confirmBtn.type = "button";
     confirmBtn.addEventListener("click", () => {
+      if (confirmBtn.disabled) return;
+      confirmBtn.disabled = true;
       clearTimeout(previewTimeout);
       m.remove();
       
@@ -223,12 +236,16 @@
   
   function executeWithPrompt(prompt, plan) {
     btn.disabled = true; setHint("");
-    fetch("/api/execute", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(plan ? {prompt, plan} : {prompt}), signal: AbortSignal.timeout(API_TIMEOUT)})
+    fetch("/api/execute", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(plan ? {prompt, plan} : {prompt}), signal: to(API_TIMEOUT)})
       .then(r => r.json().catch(() => ({})))
       .then(data => {
         if (!r.ok) {
           const msg = typeof data.detail === "string" ? data.detail : "Could not queue that goal.";
           setHint(msg, true);
+          return;
+        }
+        if (typeof data.command_id !== "string" || !data.command_id) {
+          setHint("Unexpected response. Please try again.", true);
           return;
         }
         const item = {id: data.command_id, prompt, ts: Date.now(), status: data.status || "processing", note: ""};

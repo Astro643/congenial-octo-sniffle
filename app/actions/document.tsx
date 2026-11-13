@@ -30,7 +30,13 @@ export function Document(handle: Handle<DocumentProps>) {
             rel="icon"
             href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M2.5 5h19L12 20.5z' fill='%23000'/%3E%3C/svg%3E"
           />
-          <script>{"window.process = window.process || { env: { NODE_ENV: \"production\" } }"}</script>
+          <script>
+            {"window.process = window.process || { env: { NODE_ENV: \"production\" } };" +
+              "document.addEventListener('submit', function (e) {" +
+              "var f = e.target;" +
+              "if (f && (f.id === 'form' || f.id === 'sw-form') && !f.dataset.ready) e.preventDefault();" +
+              "}, true);"}
+          </script>
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <link rel="stylesheet" href={FONTS} />

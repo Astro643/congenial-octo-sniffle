@@ -4,6 +4,7 @@
   const root = () => $("sw"), launch = () => $("sw-launch"), panel = () => $("sw-panel"), dot = () => $("sw-dot");
   const thread = () => $("sw-thread"), form = () => $("sw-form"), input = () => $("sw-input"), sendBtn = () => $("sw-send");
   const STORE = "support_chat_v1", MAX_KEPT = 30, CHAT_TIMEOUT = 30000, STATUS_TIMEOUT = 15000;
+  const to = (ms) => { try { return AbortSignal.timeout(ms); } catch { return undefined; } };
   const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 12.5l4.2 4.2L18.5 7.8"/></svg>';
   const WARN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 6v8M12 18h.01"/></svg>';
   const CHAT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"><path d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-7l-4 3.5V16H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><path d="M8 9.5h8M8 12.5h5"/></svg>';
@@ -91,7 +92,7 @@
     label.textContent = status.label;
     sub.textContent = status.overall === "operational" ? "Everything is running normally" : "We are aware and working through it";
     $("sw-updated").textContent = ago(status.updated);
-    for (const c of status.components) {
+    for (const c of (Array.isArray(status.components) ? status.components : [])) {
       const row = el("div", "sw-comp");
       row.appendChild(el("span", "", c.name));
       const right = el("span");
@@ -104,7 +105,7 @@
   }
   async function fetchStatus() {
     try {
-      const r = await fetch("/api/public/status", {cache: "no-store", signal: AbortSignal.timeout(STATUS_TIMEOUT)});
+      const r = await fetch("/api/public/status", {cache: "no-store", signal: to(STATUS_TIMEOUT)});
       if (!r.ok) throw new Error();
       status = await r.json();
     } catch { if (!status) status = null; }
@@ -153,7 +154,7 @@
       const r = await fetch("/api/support/chat", {
         method: "POST", headers: {"Content-Type": "application/json"},
         body: JSON.stringify({message: text.slice(0, 600), history}),
-        signal: AbortSignal.timeout(CHAT_TIMEOUT)
+        signal: to(CHAT_TIMEOUT)
       });
       const data = await r.json().catch(() => ({}));
       if (r.ok && data.reply) messages.push({role: "assistant", text: data.reply});
@@ -169,6 +170,7 @@
   /* ---------- start ---------- */
   messages = load();
   schedule();
+  form()?.setAttribute("data-ready", "1");
   setTimeout(fetchStatus, 800);
   if (location.hash === "#support") openChat();
 })();

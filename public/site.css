@@ -318,3 +318,5 @@ details:hover{border-color:#BDBCB7}
   .nav nav a{padding:10px 14px;white-space:nowrap}
 }
 @media (prefers-reduced-motion:reduce){.card:hover,.demo:hover{transform:none}}
+
+@media (pointer:coarse){.sw-form input{font-size:16px}}
