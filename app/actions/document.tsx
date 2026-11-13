@@ -50,9 +50,6 @@ export function Document(handle: Handle<DocumentProps>) {
         </head>
         <body>
           {children}
-          {meta.scripts.map((src) => (
-            <script key={src} src={src}></script>
-          ))}
           <script type="module" src={href}></script>
         </body>
       </html>

@@ -8,7 +8,7 @@ export const assets = createAssetServer({
   basePath: "/assets",
   rootDir: process.cwd(),
 
-  allowFiles: ["app/routes.ts", "app/**/public/**"],
+  allowFiles: ["app/routes.ts", "app/**/public/**", "app/ui/**"],
   allowPackages: ["remix"],
   denyFiles: ["app/**/*.test.*"],
   sourceMaps: isDevelopment ? "external" : undefined,

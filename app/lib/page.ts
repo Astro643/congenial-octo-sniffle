@@ -3,5 +3,4 @@ export interface PageMeta {
   description?: string
   robots?: string
   styles: string[]
-  scripts: string[]
 }
