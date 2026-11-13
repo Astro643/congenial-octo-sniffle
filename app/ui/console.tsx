@@ -690,6 +690,11 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
             handle.update()
             return
           }
+          if (r.status === 404) {
+            items = items.map((i) => (i.id === item.id ? { ...i, status: "unknown", note: "" } : i))
+            handle.update()
+            return
+          }
           if (!r.ok) return
           const data = await r.json()
           if (typeof data.status !== "string" || !data.status) return
