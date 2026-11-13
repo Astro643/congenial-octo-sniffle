@@ -75,7 +75,7 @@
   }
   function renderStatus() {
     const list = $("sw-list"), ico = $("sw-ico"), label = $("sw-label"), sub = $("sw-sub");
-    if (!list || !ico || !label || !sub) return;
+    if (!list || !ico || !label || !sub || !dot() || !$("sw-updated")) return;
     list.replaceChildren();
     if (!status) {
       dot().className = "sw-dot";

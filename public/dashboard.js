@@ -77,6 +77,7 @@
         if (r.status === 401) { setHint("Session expired. Open a fresh link from your bot.", true); return; }
         if (!r.ok) return;
         const data = await r.json();
+        if (typeof data.status !== "string" || !data.status) return;
         const note = data.error || data.result || "";
         if (data.status !== item.status || note !== item.note) {
           item.status = data.status; item.note = note; render(item);
@@ -132,7 +133,8 @@
     const title = el("h2", "preview-title", "Preview (Dry Run)");
     card.appendChild(title);
     
-    if (previewData.incomplete || !previewData.complete) {
+    const needsAnswer = previewData.incomplete || !previewData.complete;
+    if (needsAnswer) {
       const question = el("p", "preview-question", previewData.question || "Can you clarify your request?");
       card.appendChild(question);
     }
@@ -175,17 +177,21 @@
       btn.disabled = !active; if (active) input.focus();
     });
     
-    const confirmBtn = el("button", "preview-btn preview-confirm", previewData.incomplete ? "Answer Question" : "Execute");
+    const confirmBtn = el("button", "preview-btn preview-confirm", needsAnswer ? "Edit request" : "Execute");
     confirmBtn.type = "button";
-    confirmBtn.addEventListener("click", async () => {
+    confirmBtn.addEventListener("click", () => {
       clearTimeout(previewTimeout);
       m.remove();
       
-      if (previewData.incomplete || !previewData.complete) {
-        // Ask the question
-        executeWithPrompt(currentPreviewPrompt, plan);
+      if (needsAnswer) {
+        // A question came back: hand the prompt back for editing instead of
+        // re-running the same goal, which would only ask the same question again.
+        input.value = currentPreviewPrompt;
+        syncReady();
+        setHint(previewData.question || "Add more detail and run it again.", false);
+        btn.disabled = false;
+        input.focus();
       } else {
-        // Auto-execute after preview
         executeWithPrompt(currentPreviewPrompt, plan);
       }
     });

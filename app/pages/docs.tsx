@@ -19,7 +19,7 @@ export function DocsPage() {
               {"Controller"}
             </a>
             <div className={"nav-right"}>
-              <a className={"btn btn-primary btn-sm"} href={"/dashboard"}>
+              <a className={"btn btn-primary btn-sm"} href={"/dashboard"} data-rmx-document={""}>
                 {"Open Console"}
               </a>
             </div>
@@ -104,10 +104,10 @@ export function DocsPage() {
                 {"When you execute a plan, Controller starts a durable workflow: an isolated Linux sandbox is created for your request, each step runs inside it in order, and the sandbox is destroyed when the plan finishes — nothing is shared between requests. The bot carries out the Discord-side actions, and the workflow records the result of every step so the Console can show you exactly what happened."}
               </p>
               <h2>
-                {"Monthly report"}
+                {"Scheduled runs (coming soon)"}
               </h2>
               <p>
-                {"Once a month, Controller can generate a report for your server: activity, growth and recommendations written by the agent. During the closed beta you can generate one on demand from the Console; automatic monthly runs for every server come later."}
+                {"Soon you will be able to put any goal on a monthly schedule: Controller will run it for you automatically, around the same time every month, and you will be able to cancel it from the Console like any other request."}
               </p>
               <h2>
                 {"Support and status"}
@@ -184,7 +184,7 @@ export function DocsPage() {
                 <h4>
                   {"Product"}
                 </h4>
-                <a href={"/dashboard"}>
+                <a href={"/dashboard"} data-rmx-document={""}>
                   {"Console"}
                 </a>
                 <a href={"/docs"}>
@@ -304,23 +304,47 @@ export function DocsPage() {
                     {"Answers are written by AI"}
                   </small>
                 </div>
-                <button className={"sw-x"} type={"button"} data-sw-close={""} aria-label={"Close"}>
-                  <svg viewBox={"0 0 24 24"} fill={"none"} stroke={"currentColor"} strokeWidth={"2.4"} strokeLinecap={"round"}>
-                    <path d={"M6 6l12 12M18 6L6 18"}></path>
-                  </svg>
-                </button>
+                <div>
+                  <button className={"sw-ib"} type={"button"} id={"sw-new"} aria-label={"New chat"} title={"New chat"}>
+                    <svg viewBox={"0 0 24 24"} fill={"none"} stroke={"currentColor"} strokeWidth={"2.2"} strokeLinecap={"round"}>
+                      <path d={"M12 5v14M5 12h14"}></path>
+                    </svg>
+                  </button>
+                  <button className={"sw-ib"} type={"button"} data-sw-close={""} aria-label={"Close"}>
+                    <svg viewBox={"0 0 24 24"} fill={"none"} stroke={"currentColor"} strokeWidth={"2.4"} strokeLinecap={"round"}>
+                      <path d={"M6 6l12 12M18 6L6 18"}></path>
+                    </svg>
+                  </button>
+                </div>
               </div>
-              <div className={"sw-thread"} id={"sw-thread"}></div>
+              <div className={"sw-thread"} id={"sw-thread"} aria-live={"polite"}></div>
+              <div className={"sw-note"}>
+                {"AI can make mistakes. For anything important, check the FAQ."}
+              </div>
               <form className={"sw-form"} id={"sw-form"} autoComplete={"off"}>
-                <input id={"sw-input"} type={"text"} maxLength={600} placeholder={"Ask about Controller…"} aria-label={"Message"} />
-                <button id={"sw-send"} type={"submit"} aria-label={"Send"} title={"Send"}>
-                  <svg viewBox={"0 0 24 24"} fill={"none"} stroke={"currentColor"} strokeWidth={"2.2"} strokeLinecap={"round"} strokeLinejoin={"round"} aria-hidden={"true"}>
+                <input id={"sw-input"} type={"text"} maxLength={600} placeholder={"Ask a question"} aria-label={"Your question"} />
+                <button className={"sw-send"} id={"sw-send"} type={"submit"} aria-label={"Send"}>
+                  <svg viewBox={"0 0 24 24"} fill={"none"} stroke={"currentColor"} strokeWidth={"2.6"} strokeLinecap={"round"} strokeLinejoin={"round"} aria-hidden={"true"}>
                     <path d={"M12 19V5"}></path>
                     <path d={"M5 12l7-7 7 7"}></path>
                   </svg>
                 </button>
               </form>
             </section>
+            <nav className={"sw-tabs"} aria-label={"Support sections"}>
+              <button className={"sw-tab on"} type={"button"} id={"sw-tab-home"} data-tab={"home"}>
+                <svg viewBox={"0 0 24 24"} stroke={"currentColor"} strokeWidth={"1.9"} strokeLinejoin={"round"} strokeLinecap={"round"} fill={"none"} aria-hidden={"true"}>
+                  <path d={"M4 11.2 12 4.8l8 6.4V19a1 1 0 0 1-1 1h-4.2v-5.2H9.2V20H5a1 1 0 0 1-1-1z"}></path>
+                </svg>
+                {"Home"}
+              </button>
+              <button className={"sw-tab"} type={"button"} id={"sw-tab-messages"} data-tab={"messages"}>
+                <svg viewBox={"0 0 24 24"} stroke={"currentColor"} strokeWidth={"1.9"} strokeLinejoin={"round"} strokeLinecap={"round"} fill={"none"} aria-hidden={"true"}>
+                  <path d={"M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-7l-4 3.5V16H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"}></path>
+                </svg>
+                {"Messages"}
+              </button>
+            </nav>
           </div>
         </div>
       </>

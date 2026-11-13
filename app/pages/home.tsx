@@ -19,7 +19,7 @@ export function HomePage() {
               {"Controller"}
             </a>
             <div className={"nav-right"}>
-              <a className={"btn btn-primary btn-sm"} href={"/dashboard"}>
+              <a className={"btn btn-primary btn-sm"} href={"/dashboard"} data-rmx-document={""}>
                 {"Open Console"}
               </a>
             </div>
@@ -73,7 +73,7 @@ export function HomePage() {
                 {"State a goal in plain language. A dedicated AI agent audits it, researches, decides each next step and acts, a durable workflow keeps it running, and your bot carries out the Discord side, in seconds or across hours."}
               </p>
               <div className={"cta"}>
-                <a className={"btn btn-primary"} href={"/dashboard"} data-invite={""}>
+                <a className={"btn btn-primary"} href={"/dashboard"} data-invite={""} data-rmx-document={""}>
                   {"Open Console"}
                 </a>
               </div>
@@ -342,7 +342,7 @@ export function HomePage() {
                 {", and hand over your first goal."}
               </p>
               <div className={"cta"}>
-                <a className={"btn btn-primary"} href={"/dashboard"} data-invite={""}>
+                <a className={"btn btn-primary"} href={"/dashboard"} data-invite={""} data-rmx-document={""}>
                   {"Open Console"}
                 </a>
               </div>
@@ -367,7 +367,7 @@ export function HomePage() {
                 <h4>
                   {"Product"}
                 </h4>
-                <a href={"/dashboard"}>
+                <a href={"/dashboard"} data-rmx-document={""}>
                   {"Console"}
                 </a>
                 <a href={"/docs"}>

@@ -19,7 +19,7 @@ export function PrivacyPage() {
               {"Controller"}
             </a>
             <div className={"nav-right"}>
-              <a className={"btn btn-primary btn-sm"} href={"/dashboard"}>
+              <a className={"btn btn-primary btn-sm"} href={"/dashboard"} data-rmx-document={""}>
                 {"Open Console"}
               </a>
             </div>
@@ -234,7 +234,7 @@ export function PrivacyPage() {
                 <h4>
                   {"Product"}
                 </h4>
-                <a href={"/dashboard"}>
+                <a href={"/dashboard"} data-rmx-document={""}>
                   {"Console"}
                 </a>
                 <a href={"/docs"}>

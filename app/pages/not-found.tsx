@@ -19,7 +19,7 @@ export function NotFoundPage() {
               {"Controller"}
             </a>
             <div className={"nav-right"}>
-              <a className={"btn btn-primary btn-sm"} href={"/dashboard"}>
+              <a className={"btn btn-primary btn-sm"} href={"/dashboard"} data-rmx-document={""}>
                 {"Open Console"}
               </a>
             </div>
@@ -38,7 +38,7 @@ export function NotFoundPage() {
                 <a className={"btn btn-primary"} href={"/"}>
                   {"Home"}
                 </a>
-                <a className={"btn"} href={"/dashboard"}>
+                <a className={"btn"} href={"/dashboard"} data-rmx-document={""}>
                   {"Open Console"}
                 </a>
               </div>
@@ -63,7 +63,7 @@ export function NotFoundPage() {
                 <h4>
                   {"Product"}
                 </h4>
-                <a href={"/dashboard"}>
+                <a href={"/dashboard"} data-rmx-document={""}>
                   {"Console"}
                 </a>
                 <a href={"/docs"}>
