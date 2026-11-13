@@ -218,6 +218,33 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
         maxWidth: "94%",
       },
     },
+    "@media (min-width:900px)": {
+      maxWidth: "760px",
+      fontSize: "16px",
+      padding: "92px 24px 230px",
+      "& #feed": {
+        gap: "48px",
+      },
+      "& .bubble": {
+        maxWidth: "78%",
+        fontSize: "17px",
+        padding: "15px 22px",
+        borderRadius: "16px 16px 5px 16px",
+      },
+      "& .status-row": {
+        paddingLeft: "6px",
+      },
+      "& .op-note": {
+        fontSize: "13px",
+        padding: "14px 16px",
+      },
+      "& .op-id, & .op-time": {
+        fontSize: "12px",
+      },
+      "& .badge": {
+        fontSize: "11.5px",
+      },
+    },
   })
 
   const barStyle = css({
@@ -338,6 +365,29 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
     "@media (pointer:coarse)": {
       "& #prompt": {
         fontSize: "16px",
+      },
+    },
+    "@media (min-width:900px)": {
+      "& #form": {
+        maxWidth: "760px",
+      },
+      "& #prompt": {
+        fontSize: "16.5px",
+        padding: "21px 76px 21px 28px",
+        borderRadius: "18px",
+      },
+      "& #go": {
+        width: "44px",
+        height: "44px",
+        right: "12px",
+      },
+      "& #go svg": {
+        width: "20px",
+        height: "20px",
+      },
+      "& #hint": {
+        maxWidth: "760px",
+        fontSize: "12.5px",
       },
     },
   })
