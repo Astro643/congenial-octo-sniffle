@@ -17,8 +17,14 @@ export const router = createRouter({
     },
     async (context, next) => {
       const res = await next()
-      if (!new URL(context.request.url).pathname.startsWith("/api/")) {
-        res.headers.set("cache-control", "no-cache")
+      const { pathname } = new URL(context.request.url)
+      if (!pathname.startsWith("/api/")) {
+        res.headers.set(
+          "cache-control",
+          pathname.startsWith("/assets/")
+            ? "public, max-age=31536000, immutable"
+            : "no-cache",
+        )
       }
       return res
     },
