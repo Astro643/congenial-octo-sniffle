@@ -40,7 +40,8 @@ export function Document(handle: Handle<DocumentProps>) {
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <link rel="stylesheet" href={FONTS} />
-          {meta.styles.map((style) => (
+          <link rel="stylesheet" href="/base.css" />
+          {(meta.styles ?? []).map((style) => (
             <link key={style} rel="stylesheet" href={style} />
           ))}
           <ImportMap value={importMap} />

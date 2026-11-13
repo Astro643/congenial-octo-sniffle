@@ -1,0 +1,31 @@
+@layer base, rmx;
+
+@layer base {
+  :root{
+    --canvas:#EEEDE8; --surface:#F8F7F4; --border:#D1D0CB; --border-soft:#E1DFDA;
+    --green:#2EFF9B; --green-deep:#1BE585; --green-soft:#D9FCE9; --green-ink:#06743C;
+    --dark:#222022; --dark-2:#343233; --dark-line:#353335; --btn:#2D2B2D;
+    --ink:#050505; --ink-2:#2E2C2E; --muted:#5F5E61; --faint:#8E8D91; --mono-bg:#E2E0DB;
+    --emerald:#12A150; --amber:#B45309; --rose:#DC2626;
+    --display:"Anton","Bebas Neue",Impact,"Haettenschweiler","Arial Narrow Bold",sans-serif;
+    --sans:"Inter var",Inter,"SF Pro Text",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --lift:0 1px 0 rgba(255,255,255,.7) inset,0 2px 6px rgba(5,5,5,.05),0 22px 44px -22px rgba(5,5,5,.22);
+    --noise:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 0.18'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:#DADAE0 transparent}
+  body{background:var(--canvas) var(--noise);color:var(--ink);font:16px/1.65 var(--sans);-webkit-font-smoothing:antialiased;
+    font-feature-settings:"cv11","ss01";letter-spacing:-.005em;min-height:100vh;display:flex;flex-direction:column;overflow-x:clip}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:linear-gradient(90deg,rgba(5,5,5,.07) 1px,transparent 1px) calc(50% - 135px) 0/270px 100%,
+                linear-gradient(rgba(5,5,5,.045) 1px,transparent 1px) 0 0/100% 270px}
+  ::selection{background:rgba(46,255,155,.45)}
+  a{color:inherit}
+  a:focus-visible{outline:3px solid rgba(6,116,60,.55);outline-offset:2px}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+}
+
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
