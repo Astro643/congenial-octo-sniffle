@@ -12,7 +12,7 @@
     unknown: "Expired"
   };
   const FINAL_STATES = new Set(["cancelled", "completed", "blocked_by_traffic", "failed", "rejected", "unknown", "stalled"]);
-  const POLL_MS = 1500, GIVE_UP_MS = 26 * 60 * 60 * 1000, STORE_KEY = "console_history_v1", MAX_ITEMS = 50;
+  const POLL_MS = 1500, GIVE_UP_MS = 26 * 60 * 60 * 1000, STORE_KEY = "console_history_v1", MAX_ITEMS = 50, API_TIMEOUT = 45000;
 
   const feed = document.getElementById("feed");
   const form = document.getElementById("form");
@@ -54,7 +54,7 @@
       cancel.addEventListener("click", async () => {
         cancel.disabled = true;
         try {
-          const r = await fetch("/api/cancel/" + encodeURIComponent(item.id), {method: "POST"});
+          const r = await fetch("/api/cancel/" + encodeURIComponent(item.id), {method: "POST", signal: AbortSignal.timeout(15000)});
           const d = await r.json().catch(() => ({}));
           if (r.ok) { item.status = "cancelled"; item.note = ""; render(item); save(); }
           else { setHint(typeof d.detail === "string" ? d.detail : "Could not cancel.", true); cancel.disabled = false; }
@@ -73,7 +73,7 @@
     await Promise.all(pending.map(async item => {
       if (Date.now() - item.ts > GIVE_UP_MS) { item.status = "stalled"; render(item); return; }
       try {
-        const r = await fetch("/api/status/" + encodeURIComponent(item.id), {cache: "no-store"});
+        const r = await fetch("/api/status/" + encodeURIComponent(item.id), {cache: "no-store", signal: AbortSignal.timeout(15000)});
         if (r.status === 401) { setHint("Session expired. Open a fresh link from your bot.", true); return; }
         if (!r.ok) return;
         const data = await r.json();
@@ -97,7 +97,7 @@
     
     // First, generate preview (dry run)
     try {
-      const previewR = await fetch("/api/preview", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({prompt})});
+      const previewR = await fetch("/api/preview", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({prompt}), signal: AbortSignal.timeout(API_TIMEOUT)});
       const previewData = await previewR.json().catch(() => ({}));
       
       if (!previewR.ok) {
@@ -217,7 +217,7 @@
   
   function executeWithPrompt(prompt, plan) {
     btn.disabled = true; setHint("");
-    fetch("/api/execute", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(plan ? {prompt, plan} : {prompt})})
+    fetch("/api/execute", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(plan ? {prompt, plan} : {prompt}), signal: AbortSignal.timeout(API_TIMEOUT)})
       .then(r => r.json().catch(() => ({})))
       .then(data => {
         if (!r.ok) {
