@@ -587,6 +587,11 @@ export const SupportWidget = clientEntry(
 
     const focusInput = (delay = 0) => setTimeout(() => inputNode?.focus(), delay)
 
+    const setDraft = (v: string) => {
+      draft = v
+      if (inputNode) inputNode.value = v
+    }
+
     const setMessages = (next: ChatMessage[]) => {
       messages = next
       saveMessages(messages)
@@ -635,7 +640,7 @@ export const SupportWidget = clientEntry(
         .map((m) => ({ role: m.role, text: m.text.slice(0, 800) }))
       messages = [...messages, { role: "user", text }]
       busy = true
-      draft = ""
+      setDraft("")
       handle.update()
       try {
         const r = await fetch("/api/support/chat", {
@@ -918,7 +923,6 @@ export const SupportWidget = clientEntry(
                 maxLength={600}
                 placeholder="Ask a question"
                 aria-label="Your question"
-                value={draft}
                 mix={[
                   on("input", (event) => {
                     draft = event.currentTarget.value
