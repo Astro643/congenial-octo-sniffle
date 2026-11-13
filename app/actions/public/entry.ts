@@ -5,9 +5,6 @@ import {
 } from "remix/multiple-import-maps-polyfill"
 import { run } from "remix/component"
 
-import { startMotion } from "./motion.ts"
-import { startParticles } from "./particles.ts"
-
 run({
   async loadModule(moduleUrl, exportName) {
     const mod = await importModule(moduleUrl)
@@ -24,6 +21,3 @@ run({
     return []
   },
 })
-
-startMotion()
-startParticles()

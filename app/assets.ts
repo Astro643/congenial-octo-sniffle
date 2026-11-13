@@ -9,7 +9,7 @@ export const assets = createAssetServer({
   rootDir: process.cwd(),
 
   allowFiles: ["app/routes.ts", "app/**/public/**"],
-  allowPackages: ["remix", "@tsparticles/slim", "framer-motion"],
+  allowPackages: ["remix"],
   denyFiles: ["app/**/*.test.*"],
   sourceMaps: isDevelopment ? "external" : undefined,
   minify: !isDevelopment,

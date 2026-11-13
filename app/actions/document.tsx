@@ -43,17 +43,13 @@ export function Document(handle: Handle<DocumentProps>) {
           {meta.styles.map((style) => (
             <link key={style} rel="stylesheet" href={style} />
           ))}
-          <link rel="stylesheet" href="/motion.css" />
           <ImportMap value={importMap} />
           {preloads.map((preloadHref) => (
             <link key={preloadHref} rel="modulepreload" href={preloadHref} />
           ))}
         </head>
         <body>
-          <div id="particle-backdrop" class="particle-backdrop" aria-hidden="true"></div>
-          <div id="page-motion" class="page-motion">
-            {children}
-          </div>
+          {children}
           {meta.scripts.map((src) => (
             <script key={src} src={src}></script>
           ))}
