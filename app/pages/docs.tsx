@@ -213,36 +213,54 @@ export function DocsPage() {
                 {"API"}
               </h2>
               <p>
-                {"The Console talks to a small JSON API. All endpoints live under "}
+                {"The Console sends agent requests to same-origin server routes under "}
                 <code>
-                  {"/api"}
+                  {"/api/controller/agent"}
                 </code>
-                {" and are tied to your Console session:"}
+                {"; the server adds its private agent API key when forwarding to the backend:"}
               </p>
               <ul>
                 <li>
                   <code>
-                    {"POST /api/preview"}
+                    {"POST /api/controller/agent/preview"}
                   </code>
-                  {" \u2014 turn a prompt into a plan or an answer."}
+                  {" \u2014 turn a prompt into an agent plan or a clarifying question."}
                 </li>
                 <li>
                   <code>
-                    {"POST /api/execute"}
+                    {"POST /api/controller/agent/execute"}
                   </code>
-                  {" \u2014 start a plan (or a prompt) and get a request id."}
+                  {" \u2014 start the previewed plan and get a request id."}
+                </li>
+                <li>
+                  <code>
+                    {"GET /api/controller/agent/status/:id"}
+                  </code>
+                  {" \u2014 poll status, result, or a pending approval."}
+                </li>
+                <li>
+                  <code>
+                    {"POST /api/controller/agent/approve/:id"}
+                  </code>
+                  {" \u2014 approve or reject a requested action."}
+                </li>
+                <li>
+                  <code>
+                    {"POST /api/controller/agent/cancel/:id"}
+                  </code>
+                  {" \u2014 cancel a waiting agent request."}
                 </li>
                 <li>
                   <code>
                     {"GET /api/status/:id"}
                   </code>
-                  {" \u2014 current status and result of a request."}
+                  {" \u2014 legacy status API used by other integrations."}
                 </li>
                 <li>
                   <code>
                     {"POST /api/cancel/:id"}
                   </code>
-                  {" \u2014 cancel a running request."}
+                  {" \u2014 cancel a legacy request."}
                 </li>
                 <li>
                   <code>
