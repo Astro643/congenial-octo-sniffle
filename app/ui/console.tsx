@@ -4,6 +4,7 @@ import type { Handle } from "remix/component"
 const LABELS: Record<string, string> = {
   processing: "Processing",
   waiting: "Waiting",
+  awaiting_approval: "Approval required",
   cancelled: "Cancelled",
   completed: "Completed",
   blocked_by_traffic: "Traffic stall",
@@ -23,7 +24,7 @@ const FINAL_STATES = new Set([
 ])
 const POLL_MS = 1500
 const GIVE_UP_MS = 26 * 60 * 60 * 1000
-const STORE_KEY = "console_history_v1"
+const STORE_KEY = "console_history_v2"
 const MAX_ITEMS = 50
 const API_TIMEOUT = 45000
 
@@ -41,6 +42,8 @@ interface OpItem {
   ts: number
   status: string
   note: string
+  approval?: { approval_token: string; label?: string; tool?: string }
+  approvalPending?: boolean
 }
 
 interface PreviewData {
@@ -48,7 +51,8 @@ interface PreviewData {
   incomplete?: boolean
   question?: string
   summary?: string
-  steps?: { label?: string; action?: string }[]
+  steps?: { label?: string; action?: string; requires_confirmation?: boolean }[]
+  agent_plan?: Record<string, unknown>
 }
 
 function loadHistory(): OpItem[] {
@@ -62,7 +66,10 @@ function loadHistory(): OpItem[] {
 
 function saveHistory(items: OpItem[]) {
   try {
-    localStorage.setItem(STORE_KEY, JSON.stringify(items.slice(-MAX_ITEMS)))
+    localStorage.setItem(
+      STORE_KEY,
+      JSON.stringify(items.slice(-MAX_ITEMS).map(({ approval: _approval, approvalPending: _pending, ...item }) => item)),
+    )
   } catch {}
 }
 
@@ -75,7 +82,6 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
   let busy = false
   let preview: PreviewData | undefined
   let previewPrompt = ""
-  let previewTimer: ReturnType<typeof setTimeout> | undefined
   let inputNode: HTMLInputElement | undefined
 
   const mainStyle = css({
@@ -134,6 +140,11 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
       color: "var(--faint)",
       fontVariantNumeric: "tabular-nums",
     },
+    "& .op-approval-label": {
+      flex: "1 1 100%",
+      color: "var(--amber)",
+      fontSize: "13px",
+    },
     "& .op-note": {
       marginLeft: "4px",
       fontFamily: "var(--mono)",
@@ -180,6 +191,10 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
       color: "#0B5CAD",
       background: "#DCEBFB",
     },
+    "& .s-awaiting_approval": {
+      color: "#8A4B04",
+      background: "#FFEBC7",
+    },
     "& .s-cancelled": {
       color: "var(--muted)",
       background: "#E4E2DD",
@@ -211,6 +226,11 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
     "& .op-cancel:disabled": {
       opacity: ".5",
       cursor: "progress",
+    },
+    "& .op-approve": {
+      color: "#000",
+      background: "var(--green)",
+      borderColor: "var(--green-deep)",
     },
     "@media (max-width:520px)": {
       paddingTop: "96px",
@@ -461,6 +481,10 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
       flex: 1,
       paddingTop: "2px",
     },
+    "& .preview-approval": {
+      color: "var(--amber)",
+      font: "500 11px var(--mono)",
+    },
     "& .preview-empty": {
       margin: 0,
       color: "var(--muted)",
@@ -528,9 +552,7 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
   }
 
   const closePreview = () => {
-    clearTimeout(previewTimer)
     preview = undefined
-    previewTimer = undefined
     busy = false
     handle.update()
     focusInput()
@@ -538,17 +560,17 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
 
   const execute = async (
     prompt: string,
-    plan: { summary?: string; steps?: PreviewData["steps"] } | null,
+    agentPlan: PreviewData["agent_plan"],
     signal?: AbortSignal,
   ) => {
     busy = true
     setHint("")
     handle.update()
     try {
-      const r = await fetch("/api/execute", {
+      const r = await fetch("/api/controller/agent/execute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(plan ? { prompt, plan } : { prompt }),
+        body: JSON.stringify({ agent_plan: agentPlan }),
         signal: to(API_TIMEOUT),
       })
       const data = await r.json().catch(() => ({}) as Record<string, unknown>)
@@ -592,7 +614,7 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
     setHint("")
     handle.update()
     try {
-      const r = await fetch("/api/preview", {
+      const r = await fetch("/api/controller/agent/preview", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
@@ -608,18 +630,6 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
       preview = data
       previewPrompt = prompt
       handle.update()
-      const plan =
-        data.complete && !data.incomplete ? { summary: data.summary, steps: data.steps } : null
-      if (plan) {
-        clearTimeout(previewTimer)
-        previewTimer = setTimeout(() => {
-          if (preview) {
-            preview = undefined
-            previewTimer = undefined
-            execute(previewPrompt, plan)
-          }
-        }, 9000)
-      }
     } catch {
       if (!signal.aborted) setHint("Network error. Please try again.", true)
     } finally {
@@ -635,11 +645,8 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
     if (!preview) return
     const data = preview
     const prompt = previewPrompt
-    const needsAnswer = data.incomplete || !data.complete
-    const plan = needsAnswer ? null : { summary: data.summary, steps: data.steps }
-    clearTimeout(previewTimer)
+    const needsAnswer = data.incomplete || !data.complete || !data.agent_plan
     preview = undefined
-    previewTimer = undefined
     if (needsAnswer) {
       setDraft(prompt)
       busy = false
@@ -648,13 +655,54 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
       focusInput()
     } else {
       handle.update()
-      execute(prompt, plan)
+      execute(prompt, data.agent_plan)
+    }
+  }
+
+  const approveOp = async (item: OpItem, approved: boolean, signal: AbortSignal) => {
+    if (!item.approval || item.approvalPending) return
+    items = items.map((i) => (i.id === item.id ? { ...i, approvalPending: true } : i))
+    handle.update()
+    try {
+      const r = await fetch(
+        "/api/controller/agent/approve/" + encodeURIComponent(item.id),
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            approval_token: item.approval.approval_token,
+            approved,
+          }),
+          signal: to(15000),
+        },
+      )
+      const data = await r.json().catch(() => ({}) as Record<string, unknown>)
+      if (signal.aborted) return
+      if (!r.ok) {
+        setHint(typeof data.detail === "string" ? data.detail : "Could not submit that decision.", true)
+        items = items.map((i) => (i.id === item.id ? { ...i, approvalPending: false } : i))
+      } else {
+        items = items.map((i) =>
+          i.id === item.id
+            ? { ...i, status: "processing", approval: undefined, approvalPending: false }
+            : i,
+        )
+        setHint("")
+      }
+      saveHistory(items)
+      handle.update()
+    } catch {
+      if (!signal.aborted) {
+        setHint("Network error. Please try again.", true)
+        items = items.map((i) => (i.id === item.id ? { ...i, approvalPending: false } : i))
+        handle.update()
+      }
     }
   }
 
   const cancelOp = async (item: OpItem, signal: AbortSignal) => {
     try {
-      const r = await fetch("/api/cancel/" + encodeURIComponent(item.id), {
+      const r = await fetch("/api/controller/agent/cancel/" + encodeURIComponent(item.id), {
         method: "POST",
         signal: signal.aborted ? undefined : to(15000),
       })
@@ -686,7 +734,7 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
           return
         }
         try {
-          const r = await fetch("/api/status/" + encodeURIComponent(item.id), {
+          const r = await fetch("/api/controller/agent/status/" + encodeURIComponent(item.id), {
             cache: "no-store",
             signal: to(15000),
           })
@@ -703,10 +751,28 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
           if (!r.ok) return
           const data = await r.json()
           if (typeof data.status !== "string" || !data.status) return
-          const note = data.error || data.result || ""
-          if (data.status !== item.status || note !== item.note) {
+          const note =
+            (typeof data.error === "string" ? data.error : "") ||
+            (typeof data.result === "string" ? data.result : "")
+          const approvalData =
+            data.status === "awaiting_approval" &&
+            data.approval &&
+            typeof data.approval.approval_token === "string"
+              ? {
+                  approval_token: data.approval.approval_token,
+                  label: typeof data.approval.label === "string" ? data.approval.label : undefined,
+                  tool: typeof data.approval.tool === "string" ? data.approval.tool : undefined,
+                }
+              : undefined
+          if (
+            data.status !== item.status ||
+            note !== item.note ||
+            approvalData?.approval_token !== item.approval?.approval_token
+          ) {
             items = items.map((i) =>
-              i.id === item.id ? { ...i, status: data.status, note } : i,
+              i.id === item.id
+                ? { ...i, status: data.status, note, approval: approvalData, approvalPending: false }
+                : i,
             )
             handle.update()
           }
@@ -737,8 +803,6 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
       },
       { signal: handle.signal },
     )
-    handle.signal.addEventListener("abort", () => clearTimeout(previewTimer))
-
     focusInput()
   })
 
@@ -769,6 +833,29 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
                 {"Cancel"}
               </button>
             ) : null}
+            {item.status === "awaiting_approval" && item.approval ? (
+              <>
+                <span class="op-approval-label">
+                  {item.approval.label || item.approval.tool || "An action needs your approval"}
+                </span>
+                <button
+                  class="op-cancel"
+                  type="button"
+                  disabled={item.approvalPending}
+                  mix={on("click", (_event, signal) => approveOp(item, false, signal))}
+                >
+                  {"Reject"}
+                </button>
+                <button
+                  class="op-cancel op-approve"
+                  type="button"
+                  disabled={item.approvalPending}
+                  mix={on("click", (_event, signal) => approveOp(item, true, signal))}
+                >
+                  {"Approve"}
+                </button>
+              </>
+            ) : null}
           </div>
           {item.note ? <div class="op-note">{item.note}</div> : null}
         </article>
@@ -778,7 +865,7 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
 
   const previewModal = () => {
     if (!preview) return null
-    const needsAnswer = preview.incomplete || !preview.complete
+    const needsAnswer = preview.incomplete || !preview.complete || !preview.agent_plan
     return (
       <div
         class="preview-modal"
@@ -802,7 +889,12 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
               preview.steps.map((step, idx) => (
                 <div key={idx} class="preview-step">
                   <span class="preview-step-num">{String(idx + 1)}</span>
-                  <span class="preview-step-label">{step.label || step.action}</span>
+                  <span class="preview-step-label">
+                    {step.label || step.action}
+                    {step.requires_confirmation ? (
+                      <small class="preview-approval">{" · approval required"}</small>
+                    ) : null}
+                  </span>
                 </div>
               ))
             ) : (
@@ -818,7 +910,7 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
               type="button"
               mix={on("click", confirmPreview)}
             >
-              {needsAnswer ? "Edit request" : "Execute"}
+              {needsAnswer ? "Edit request" : "Run"}
             </button>
           </div>
         </div>
@@ -866,8 +958,8 @@ export const Console = clientEntry(import.meta.url, function Console(handle: Han
           <button
             id="go"
             type="submit"
-            aria-label="Execute goal"
-            title="Execute goal"
+            aria-label="Preview goal"
+            title="Preview goal"
             disabled={busy}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

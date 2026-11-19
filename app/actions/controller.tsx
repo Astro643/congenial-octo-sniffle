@@ -9,11 +9,33 @@ import { PrivacyPage, meta as privacyMeta } from "../pages/privacy.tsx"
 import { TermsPage, meta as termsMeta } from "../pages/terms.tsx"
 import { NotFoundPage, meta as notFoundMeta } from "../pages/not-found.tsx"
 import { Document } from "./document.tsx"
+import {
+  approveAgent,
+  cancelAgent,
+  executeAgent,
+  getAgentStatus,
+  previewAgent,
+} from "../lib/agent-proxy.server.ts"
 
 export default createController(routes, {
   actions: {
     async assets(context) {
       return (await assets.fetch(context.request)) ?? new Response("Not Found", { status: 404 })
+    },
+    agentPreview(context) {
+      return previewAgent(context.request)
+    },
+    agentExecute(context) {
+      return executeAgent(context.request)
+    },
+    agentStatus(context) {
+      return getAgentStatus(context.request, context.params.id)
+    },
+    agentCancel(context) {
+      return cancelAgent(context.request, context.params.id)
+    },
+    agentApprove(context) {
+      return approveAgent(context.request, context.params.id)
     },
     home(context) {
       return context.render(
